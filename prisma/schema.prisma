@@ -1,0 +1,96 @@
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["driverAdapters"]
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model MenuItem {
+  id          String   @id @default(cuid())
+  name        String
+  description String?
+  price       Float
+  category    String
+  imageUrl    String?
+  isSoldOut   Boolean  @default(false)
+  isVeg       Boolean  @default(true)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems  OrderItem[]
+}
+
+model Order {
+  id               String   @id @default(cuid())
+  shortCode        String?  @unique // e.g. "SNX-7K9A" for UPI note
+  customerName     String
+  customerPhone    String
+  deliveryType     String   // "pickup" or "delivery"
+  deliveryAddress  String?
+  orderNotes       String?
+  totalAmount      Float
+  paymentMethod    String   // "upi" or "cash"
+  upiUtr           String?
+  payerName        String?  // Payer name entered by user
+  paymentScreenshot String? // Base64 compressed image
+  duplicateUtrFlag Boolean  @default(false) // Flagged if same UTR submitted on another order
+  status           String   @default("awaiting_payment") // awaiting_payment, payment_submitted, verified, rejected, preparing, ready, completed, cancelled
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  userId           String?
+  user             User?    @relation(fields: [userId], references: [id])
+  items            OrderItem[]
+
+  @@index([status])
+  @@index([createdAt])
+  @@index([upiUtr])
+  @@index([shortCode])
+}
+
+model OrderItem {
+  id             String   @id @default(cuid())
+  orderId        String
+  menuItemId     String
+  quantity       Int
+  price          Float    // price at time of order
+  customizations String?
+
+  order          Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  menuItem       MenuItem @relation(fields: [menuItemId], references: [id])
+}
+
+model User {
+  id           String   @id @default(cuid())
+  name         String
+  phone        String   @unique
+  passwordHash String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  orders       Order[]
+}
+
+model PushSubscription {
+  id        String   @id @default(cuid())
+  endpoint  String   @unique
+  authKey   String
+  p256dh    String
+  userAgent String?
+  createdAt DateTime @default(now())
+}
+
+model AdminNotification {
+  id        String   @id @default(cuid())
+  type      String   // "order_placed", "payment_submitted", "order_verified", "order_cancelled"
+  orderId   String?
+  title     String
+  message   String
+  read      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([read])
+  @@index([createdAt])
+}
