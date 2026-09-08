@@ -70,7 +70,9 @@ export async function POST(request: Request) {
     })
 
     const cookieStore = await cookies()
-    const userId = cookieStore.get('snaxy_user_session')?.value
+    const rawUserId = cookieStore.get('snaxy_user_session')?.value
+    const isValidObjectId = rawUserId && /^[0-9a-fA-F]{24}$/.test(rawUserId)
+    const userId = isValidObjectId ? rawUserId : null
 
     const shortCode = generateShortCode()
     const isCash = paymentMethod === 'cash'

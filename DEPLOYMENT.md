@@ -1,8 +1,8 @@
-# 🚀 Snaxy Deployment Guide (100% Free Tier on Vercel + Turso)
+# 🚀 Snaxy Deployment Guide (100% Free Tier on Vercel + MongoDB Atlas)
 
 Snaxy is designed to run seamlessly on free cloud infrastructure with zero recurring costs:
 - **Hosting:** [Vercel](https://vercel.com) (Hobby Free Plan)
-- **Database:** [Turso](https://turso.tech) (Free tier libSQL / SQLite with 9GB storage & 1B rows/month)
+- **Database:** [MongoDB Atlas](https://www.mongodb.com/atlas) (Free M0 Shared Cluster with 512MB storage)
 - **Real-Time Admin Notifications:**
   1. **Telegram Bot:** Direct serverless webhooks with inline Verify/Reject buttons.
   2. **Web Push / PWA:** Standard VAPID push notifications directly to admin phones and laptops.
@@ -10,24 +10,22 @@ Snaxy is designed to run seamlessly on free cloud infrastructure with zero recur
 
 ---
 
-## 1. Quick Database Setup (Turso)
+## 1. Database Setup (MongoDB Atlas)
 
-1. Install Turso CLI or log in at [turso.tech](https://turso.tech):
+1. Log in to your [MongoDB Atlas Dashboard](https://cloud.mongodb.com).
+2. Create a Database User under **Security > Database Access** (note down the `<db_username>` and password).
+3. Under **Security > Network Access**, click **Add IP Address** -> Allow Access From Anywhere (`0.0.0.0/0`) so Vercel serverless functions can connect.
+4. Construct your `DATABASE_URL`:
    ```bash
-   brew install tursodatabase/tap/turso # (or signup at turso.tech)
-   turso auth signup
+   DATABASE_URL="mongodb+srv://<db_username>:<db_password>@cluster0.nzlky6l.mongodb.net/snaxy?retryWrites=true&w=majority&appName=Cluster0"
    ```
-2. Create a database:
+5. Push the Prisma collections & indexes to MongoDB:
    ```bash
-   turso db create snaxy-db
+   npx prisma db push
    ```
-3. Get the connection URL and Auth Token:
+6. Optionally seed the initial menu items:
    ```bash
-   turso db show snaxy-db --url
-   # Example: libsql://snaxy-db-yourorg.turso.io
-
-   turso db tokens create snaxy-db
-   # Outputs your TURSO_AUTH_TOKEN
+   npm run db:seed
    ```
 
 ---
@@ -55,44 +53,30 @@ This will output `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, and `VAPID_SUBJECT`.
 
 ## 4. Deploy to Vercel
 
-1. Push your repository to GitHub / GitLab / Bitbucket.
-2. Go to [Vercel Dashboard](https://vercel.com/new) -> Import Project -> Select `Snaxy` / `snaxy-app`.
+1. Push your repository to GitHub.
+2. Go to [Vercel Dashboard](https://vercel.com/new) -> Import Project -> Select `snaxy-app`.
 3. Add the following **Environment Variables** in Vercel project settings:
 
 | Variable | Value | Notes |
 |---|---|---|
-| `TURSO_URL` | `libsql://snaxy-db-yourorg.turso.io` | Your Turso DB URL |
-| `TURSO_AUTH_TOKEN` | `eyJhb...` | Your Turso Auth Token |
+| `DATABASE_URL` | `mongodb+srv://<db_username>:password@cluster0.../snaxy?retryWrites=true&w=majority&appName=Cluster0` | MongoDB Atlas URI |
 | `ADMIN_USERNAME` | `admin` | Admin portal username |
-| `ADMIN_PASSWORD` | `YourStrongAdminPassword!` | Staff login password |
-| `SESSION_SECRET` | *(64-character random hex string)* | Used to sign session tokens |
+| `ADMIN_PASSWORD` | `snaxy_admin_2026` | Staff login password |
+| `SESSION_SECRET` | `f9b4c8a2e1d74389a915afe16aa5ae24bc27943f4a6049c5a34d2db09b5fa779` | Used to sign session tokens |
 | `VAPID_PUBLIC_KEY` | *(From `npm run gen:vapid`)* | Web Push public key |
 | `VAPID_PRIVATE_KEY` | *(From `npm run gen:vapid`)* | Web Push private key |
 | `VAPID_SUBJECT` | `mailto:admin@snaxy.local` | Contact email for Web Push |
 | `TELEGRAM_BOT_TOKEN` | `7123456789:AAF...` | From @BotFather |
 | `TELEGRAM_CHAT_ID` | `123456789` | Your Telegram Chat ID |
-| `TELEGRAM_WEBHOOK_SECRET`| `snaxy_secret_key_9876` | Secret token to verify webhook |
-| `NEXT_PUBLIC_SITE_URL` | `https://your-snaxy-project.vercel.app` | Your deployed Vercel domain |
+| `TELEGRAM_WEBHOOK_SECRET`| `whsec_snaxy_telegram_2026` | Secret token to verify webhook |
+| `NEXT_PUBLIC_SITE_URL` | `https://snaxy-app.vercel.app` | Your deployed Vercel domain |
 | `NEXT_PUBLIC_UPI_ID` | `snaxy@upi` | Your UPI ID to receive payments |
 | `NEXT_PUBLIC_MERCHANT_NAME` | `Snaxy Store` | Store name shown on UPI app |
 
-4. Click **Deploy**.
-
 ---
 
-## 5. Initialize Schema & Push Telegram Webhook
+## 5. Register Telegram Webhook (1-Click)
 
-Once deployed on Vercel:
-
-1. **Push database schema to Turso:**
-   ```bash
-   DATABASE_URL="libsql://snaxy-db-yourorg.turso.io?authToken=YOUR_TOKEN" npx prisma db push
-   ```
-
-2. **Register Telegram Webhook (1-click script):**
-   ```bash
-   node scripts/set-telegram-webhook.mjs https://your-snaxy-project.vercel.app
-   ```
-
-3. **Log in to Admin:**
-   Visit `https://your-snaxy-project.vercel.app/admin`, enter your admin credentials, and click **🔔 Enable** on the notification bell to activate browser Web Push alerts!
+```bash
+node scripts/set-telegram-webhook.mjs https://snaxy-app.vercel.app
+```

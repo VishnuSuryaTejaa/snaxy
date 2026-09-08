@@ -1,15 +1,14 @@
 generator client {
-  provider        = "prisma-client-js"
-  previewFeatures = ["driverAdapters"]
+  provider = "prisma-client-js"
 }
 
 datasource db {
-  provider = "sqlite"
+  provider = "mongodb"
   url      = env("DATABASE_URL")
 }
 
 model MenuItem {
-  id          String   @id @default(cuid())
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
   name        String
   description String?
   price       Float
@@ -24,36 +23,35 @@ model MenuItem {
 }
 
 model Order {
-  id               String   @id @default(cuid())
-  shortCode        String?  @unique // e.g. "SNX-7K9A" for UPI note
-  customerName     String
-  customerPhone    String
-  deliveryType     String   // "pickup" or "delivery"
-  deliveryAddress  String?
-  orderNotes       String?
-  totalAmount      Float
-  paymentMethod    String   // "upi" or "cash"
-  upiUtr           String?
-  payerName        String?  // Payer name entered by user
-  paymentScreenshot String? // Base64 compressed image
-  duplicateUtrFlag Boolean  @default(false) // Flagged if same UTR submitted on another order
-  status           String   @default("awaiting_payment") // awaiting_payment, payment_submitted, verified, rejected, preparing, ready, completed, cancelled
-  createdAt        DateTime @default(now())
-  updatedAt        DateTime @updatedAt
-  userId           String?
-  user             User?    @relation(fields: [userId], references: [id])
-  items            OrderItem[]
+  id                String   @id @default(auto()) @map("_id") @db.ObjectId
+  shortCode         String?  @unique // e.g. "SNX-7K9A" for UPI note
+  customerName      String
+  customerPhone     String
+  deliveryType      String   // "pickup" or "delivery"
+  deliveryAddress   String?
+  orderNotes        String?
+  totalAmount       Float
+  paymentMethod     String   // "upi" or "cash"
+  upiUtr            String?
+  payerName         String?  // Payer name entered by user
+  paymentScreenshot String?  // Base64 compressed image
+  duplicateUtrFlag  Boolean  @default(false) // Flagged if same UTR submitted on another order
+  status            String   @default("awaiting_payment") // awaiting_payment, payment_submitted, verified, rejected, preparing, ready, completed, cancelled
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  userId            String?  @db.ObjectId
+  user              User?    @relation(fields: [userId], references: [id])
+  items             OrderItem[]
 
   @@index([status])
   @@index([createdAt])
   @@index([upiUtr])
-  @@index([shortCode])
 }
 
 model OrderItem {
-  id             String   @id @default(cuid())
-  orderId        String
-  menuItemId     String
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  orderId        String   @db.ObjectId
+  menuItemId     String   @db.ObjectId
   quantity       Int
   price          Float    // price at time of order
   customizations String?
@@ -63,7 +61,7 @@ model OrderItem {
 }
 
 model User {
-  id           String   @id @default(cuid())
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
   name         String
   phone        String   @unique
   passwordHash String
@@ -74,7 +72,7 @@ model User {
 }
 
 model PushSubscription {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   endpoint  String   @unique
   authKey   String
   p256dh    String
@@ -83,7 +81,7 @@ model PushSubscription {
 }
 
 model AdminNotification {
-  id        String   @id @default(cuid())
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
   type      String   // "order_placed", "payment_submitted", "order_verified", "order_cancelled"
   orderId   String?
   title     String
