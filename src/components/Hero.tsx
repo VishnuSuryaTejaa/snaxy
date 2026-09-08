@@ -37,12 +37,12 @@ export function Hero() {
   }
 
   return (
-    <div className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 px-4 sm:px-6 lg:px-8 text-center">
+    <div className="relative overflow-hidden pt-8 pb-16 sm:pt-14 sm:pb-24 px-4 sm:px-6 lg:px-8 text-center">
       {/* Dynamic Background Aurora Mesh */}
       <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-primary/15 via-rose-500/10 to-transparent blur-[120px] rounded-full" />
-        <div className="absolute top-1/4 left-1/10 w-72 h-72 bg-primary/20 rounded-full blur-[90px] animate-aurora" />
-        <div className="absolute top-1/3 right-1/10 w-80 h-80 bg-rose-500/15 rounded-full blur-[100px] animate-aurora" style={{ animationDelay: '3s' }} />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[900px] h-[500px] bg-gradient-to-b from-primary/20 via-rose-500/15 to-transparent blur-[140px] rounded-full" />
+        <div className="absolute top-1/4 left-1/10 w-80 h-80 bg-primary/25 rounded-full blur-[100px] animate-aurora" />
+        <div className="absolute top-1/3 right-1/10 w-96 h-96 bg-rose-500/20 rounded-full blur-[110px] animate-aurora" style={{ animationDelay: '3s' }} />
       </div>
 
       <motion.div
@@ -51,19 +51,43 @@ export function Hero() {
         animate="visible"
         className="relative z-10 max-w-5xl mx-auto flex flex-col items-center"
       >
-        {/* Top Floating Pill */}
+        {/* Top Floating Live Pill */}
         <motion.div
           variants={itemVariants}
-          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-white/10 text-xs font-bold text-orange-300 shadow-[0_0_20px_-3px_rgba(255,94,14,0.3)] mb-8"
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-white/10 text-xs font-bold text-orange-300 shadow-[0_0_20px_-3px_rgba(255,94,14,0.3)] mb-6"
         >
           <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
-          <span className="tracking-wide uppercase text-[11px]">⚡ Fast-Track Campus Dining · Zero Waiting</span>
+          <span className="tracking-wider uppercase text-[11px] font-extrabold font-sans">
+            ⚡ Fast-Track Campus Dining · Zero Waiting
+          </span>
         </motion.div>
 
-        {/* Hero Main Heading */}
+        {/* Monumental Brand Display in Space Cowgirl (Largest Element) */}
+        <motion.div
+          variants={itemVariants}
+          className="relative mb-4 flex flex-col items-center select-none"
+        >
+          <div className="relative inline-block">
+            <span className="font-brand font-black text-6xl sm:text-8xl md:text-9xl lg:text-[10.5rem] tracking-wider gradient-text leading-none drop-shadow-[0_0_55px_rgba(255,85,0,0.6)] inline-block transform hover:scale-[1.02] transition-transform duration-500">
+              SNAXY
+            </span>
+            {/* Ambient Multi-layer Glow Behind Logo */}
+            <div className="absolute -inset-6 bg-gradient-to-tr from-primary via-orange-500 to-rose-600 opacity-25 blur-3xl -z-10 rounded-full pointer-events-none" />
+          </div>
+
+          <div className="flex items-center gap-3 mt-1 sm:mt-2">
+            <span className="h-px w-10 sm:w-20 bg-gradient-to-r from-transparent to-primary/70" />
+            <span className="text-[11px] sm:text-xs font-black tracking-[0.35em] uppercase text-orange-400 font-sans drop-shadow-sm">
+              Instant Campus Fuel
+            </span>
+            <span className="h-px w-10 sm:w-20 bg-gradient-to-l from-transparent to-primary/70" />
+          </div>
+        </motion.div>
+
+        {/* Hero Main Heading in Crisp Display Font */}
         <motion.h1
           variants={itemVariants}
-          className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tighter text-white mb-6 leading-[1.08] font-heading"
+          className="text-3xl sm:text-5xl lg:text-6xl font-black tracking-tight text-white mb-6 leading-[1.12] font-display"
         >
           Craving Something <span className="gradient-hero-title">Legendary?</span>
           <br />
@@ -73,7 +97,7 @@ export function Hero() {
         {/* Subtitle */}
         <motion.p
           variants={itemVariants}
-          className="text-base sm:text-xl text-slate-300 max-w-2xl mb-10 leading-relaxed font-medium"
+          className="text-base sm:text-xl text-slate-300 max-w-2xl mb-10 leading-relaxed font-normal font-sans"
         >
           Skip the endless cafeteria line. Order delicious hot meals, crispy snacks, and icy brews with instant 1-tap UPI QR. Made fresh, ready in minutes.
         </motion.p>
@@ -89,7 +113,7 @@ export function Hero() {
               e.preventDefault()
               document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })
             }}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-primary via-orange-500 to-rose-500 text-white font-black text-base transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_35px_rgba(255,94,14,0.6)] active:scale-[0.98] border border-white/20"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-primary via-orange-500 to-rose-500 text-white font-extrabold text-base transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_35px_rgba(255,94,14,0.6)] active:scale-[0.98] border border-white/20 font-display"
           >
             <Flame className="w-5 h-5 fill-white" />
             <span>Order Your Bites</span>
@@ -102,7 +126,7 @@ export function Hero() {
               e.preventDefault()
               document.getElementById('perks')?.scrollIntoView({ behavior: 'smooth' })
             }}
-            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass hover:bg-white/[0.08] text-slate-200 hover:text-white font-bold text-base transition-all border border-white/10 hover:border-white/20 active:scale-[0.98]"
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass hover:bg-white/[0.08] text-slate-200 hover:text-white font-bold text-base transition-all border border-white/10 hover:border-white/20 active:scale-[0.98] font-sans"
           >
             <Sparkles className="w-4 h-4 text-primary" />
             <span>Why Snaxy?</span>
@@ -130,8 +154,8 @@ export function Hero() {
                 <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] mb-2.5 group-hover:scale-110 transition-transform">
                   <Icon className={`w-5 h-5 ${item.color}`} />
                 </div>
-                <h4 className="font-extrabold text-sm text-white leading-tight font-heading">{item.title}</h4>
-                <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{item.desc}</p>
+                <h4 className="font-bold text-sm text-white leading-tight font-display">{item.title}</h4>
+                <p className="text-[11px] text-slate-400 mt-0.5 leading-snug font-sans">{item.desc}</p>
               </div>
             )
           })}
@@ -140,10 +164,10 @@ export function Hero() {
 
       {/* Trending Bites Live Marquee Banner */}
       <div className="mt-14 -mx-4 sm:-mx-8 border-y border-white/[0.08] bg-black/40 backdrop-blur-md py-3 overflow-hidden">
-        <div className="animate-marquee gap-8 items-center text-xs sm:text-sm font-black tracking-tight text-slate-300">
+        <div className="animate-marquee gap-8 items-center text-xs sm:text-sm font-bold tracking-tight text-slate-300">
           {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, index) => (
             <div key={index} className="flex items-center gap-6 shrink-0">
-              <span className="hover:text-primary transition-colors cursor-default">{item}</span>
+              <span className="hover:text-primary transition-colors cursor-default font-sans">{item}</span>
               <span className="text-white/20">✦</span>
             </div>
           ))}

@@ -70,11 +70,11 @@ export default async function Home() {
   }
 
   return (
-    <main className="min-h-screen bg-black">
+    <div className="flex-1 w-full flex flex-col">
       <Hero />
-      <div id="menu" className="pt-8">
+      <div className="pt-4">
         <MenuClient menuItems={menuItems} />
       </div>
-    </main>
+    </div>
   )
 }
