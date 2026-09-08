@@ -1,8 +1,9 @@
 import { prisma } from '@/lib/db'
 import { MenuClient } from '@/components/menu/MenuClient'
 import { Hero } from '@/components/Hero'
+import type { MenuItem } from '@prisma/client'
 
-const FALLBACK_MENU_ITEMS = [
+const FALLBACK_MENU_ITEMS: MenuItem[] = [
   {
     id: 'item-veg-puff',
     name: 'Veg Puff',
@@ -54,7 +55,7 @@ const FALLBACK_MENU_ITEMS = [
 ]
 
 export default async function Home() {
-  let menuItems: typeof FALLBACK_MENU_ITEMS = []
+  let menuItems: MenuItem[] = []
   try {
     menuItems = await prisma.menuItem.findMany({
       where: { isSoldOut: false },
