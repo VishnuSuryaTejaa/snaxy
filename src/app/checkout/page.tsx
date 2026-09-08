@@ -7,14 +7,14 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { QRCodeSVG } from 'qrcode.react'
 import { useIsMounted } from '@/hooks/use-is-mounted'
-import { Copy, Check, ArrowLeft, Loader2, UploadCloud, Smartphone, ShieldCheck, Image as ImageIcon, X } from 'lucide-react'
+import { Copy, Check, ArrowLeft, Loader2, UploadCloud, Smartphone, ShieldCheck, X, Sparkles } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
 const STEPS = [
   { label: 'Scan & Pay', emoji: '📱' },
   { label: 'Enter UTR', emoji: '🔢' },
-  { label: 'Verified', emoji: '✅' },
+  { label: 'Kitchen Alert', emoji: '🔔' },
 ]
 
 function CheckoutContent() {
@@ -89,10 +89,10 @@ function CheckoutContent() {
 
   if (!mounted || isLoadingOrder || !orderId) {
     return (
-      <div className="flex-1 w-full flex items-center justify-center min-h-[60vh]">
-        <div className="flex flex-col items-center gap-3">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground font-medium">Preparing payment...</p>
+      <div className="flex-1 w-full flex items-center justify-center min-h-[70vh]">
+        <div className="flex flex-col items-center gap-4 glass p-8 rounded-3xl border border-white/10">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
+          <p className="text-sm text-slate-300 font-bold">Generating dynamic UPI gateway...</p>
         </div>
       </div>
     )
@@ -153,7 +153,7 @@ function CheckoutContent() {
           ctx.drawImage(img, 0, 0, width, height)
           const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.8)
           setScreenshotBase64(compressedDataUrl)
-          toast.success('Screenshot attached!')
+          toast.success('Receipt screenshot attached!')
         }
         setIsCompressingImg(false)
       }
@@ -184,7 +184,7 @@ function CheckoutContent() {
       const data = await response.json()
       if (response.ok && data.success) {
         sessionStorage.removeItem('snaxy_active_order')
-        toast.success('Payment submitted! Awaiting kitchen verification.')
+        toast.success('Payment submitted! Alerting kitchen right now.')
         startTransition(() => {
           router.push(`/order/${orderId}`)
         })
@@ -202,24 +202,32 @@ function CheckoutContent() {
   const activeStep = utr.length === 12 ? 2 : 1
 
   return (
-    <div className="flex-1 w-full flex flex-col items-center justify-center px-4 py-8 animate-fade-in">
-      <div className="w-full max-w-md flex flex-col gap-5">
+    <div className="flex-1 w-full flex flex-col items-center justify-center px-4 sm:px-6 py-8 animate-fade-in pb-20">
+      <div className="w-full max-w-md flex flex-col gap-6">
         {/* Header */}
         <div className="text-center">
-          <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 border border-primary/20 text-xs font-bold text-primary mb-2">
-            Order Ref: <span className="font-mono">{shortCode}</span>
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/15 border border-primary/30 text-xs font-bold text-orange-300 mb-3 shadow-[0_0_15px_rgba(255,94,14,0.3)]">
+            <span>Order Reference:</span>
+            <span className="font-mono font-black text-white bg-black/40 px-2 py-0.5 rounded-lg border border-white/10">
+              {shortCode}
+            </span>
           </div>
-          <h1 className="text-3xl font-extrabold tracking-tight">Complete Payment</h1>
-          <p className="text-muted-foreground mt-1 text-sm">
-            Pay <span className="font-extrabold text-primary text-xl">₹{totalAmount.toFixed(0)}</span> via any UPI App
+          <h1 className="text-3xl sm:text-4xl font-black tracking-tight text-white font-heading">
+            Instant UPI Payment
+          </h1>
+          <p className="text-slate-400 mt-1.5 text-sm font-medium">
+            Amount Due:{' '}
+            <span className="font-black text-white text-2xl font-heading text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-400">
+              ₹{totalAmount.toFixed(0)}
+            </span>
           </p>
         </div>
 
-        {/* Step indicator */}
-        <div className="relative w-full flex items-start justify-between px-6 mb-1">
-          <div className="absolute top-[14px] left-[20%] right-[20%] h-0.5 bg-muted/50" />
+        {/* Multi-step progress indicator */}
+        <div className="relative w-full flex items-start justify-between px-6">
+          <div className="absolute top-[14px] left-[20%] right-[20%] h-0.5 bg-white/10" />
           <div
-            className="absolute top-[14px] left-[20%] h-0.5 bg-primary transition-all duration-500 ease-out"
+            className="absolute top-[14px] left-[20%] h-0.5 bg-gradient-to-r from-primary to-rose-500 transition-all duration-500 ease-out"
             style={{ width: `${((activeStep - 1) / (STEPS.length - 1)) * 60}%` }}
           />
 
@@ -229,19 +237,19 @@ function CheckoutContent() {
             return (
               <div key={i} className="flex flex-col items-center flex-1 relative gap-1.5 z-10">
                 <div
-                  className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold border-2 transition-all duration-300 ${
+                  className={`w-8 h-8 rounded-full flex items-center justify-center text-xs font-black border-2 transition-all duration-300 ${
                     done
-                      ? 'bg-primary border-primary text-primary-foreground'
+                      ? 'bg-gradient-to-r from-primary to-rose-500 border-transparent text-white shadow-md'
                       : active
-                      ? 'bg-background border-primary text-primary scale-110 shadow-sm'
-                      : 'bg-background border-muted/50 text-muted-foreground opacity-40'
+                      ? 'bg-slate-900 border-primary text-primary scale-110 shadow-[0_0_15px_rgba(255,94,14,0.5)]'
+                      : 'bg-slate-900 border-white/10 text-slate-500 opacity-50'
                   }`}
                 >
-                  {done ? <Check className="h-3 w-3" /> : step.emoji}
+                  {done ? <Check className="h-4 w-4 stroke-[3]" /> : step.emoji}
                 </div>
                 <span
-                  className={`text-[10px] font-semibold transition-all duration-300 ${
-                    active || done ? 'text-foreground' : 'text-muted-foreground opacity-40'
+                  className={`text-[11px] font-bold transition-all duration-300 ${
+                    active || done ? 'text-white' : 'text-slate-500 opacity-50'
                   }`}
                 >
                   {step.label}
@@ -252,71 +260,74 @@ function CheckoutContent() {
         </div>
 
         {/* Main Card */}
-        <div className="rounded-3xl border border-white/[0.07] bg-card overflow-hidden shadow-xl">
+        <div className="rounded-3xl glass-card border border-white/[0.08] overflow-hidden shadow-2xl">
           {/* Dynamic QR Section */}
-          <div className="flex flex-col items-center gap-4 p-6 border-b border-white/[0.07] bg-gradient-to-b from-primary/5 to-transparent">
-            {/* Dynamic QR */}
-            <div className="relative p-3.5 rounded-2xl bg-white shadow-xl ring-1 ring-black/5">
+          <div className="flex flex-col items-center gap-4 p-6 sm:p-7 border-b border-white/[0.08] bg-gradient-to-b from-primary/10 to-transparent">
+            {/* Dynamic QR Container */}
+            <div className="relative p-4 rounded-3xl bg-white shadow-[0_10px_40px_rgba(0,0,0,0.6)] ring-4 ring-primary/20">
               <QRCodeSVG
                 value={upiUri}
-                size={190}
+                size={200}
                 bgColor="#ffffff"
-                fgColor="#0f172a"
+                fgColor="#08090d"
                 level="M"
                 includeMargin={false}
               />
-              {/* Center Logo */}
+              {/* Center Snaxy Logo */}
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                <div className="w-9 h-9 rounded-xl bg-white shadow-md flex items-center justify-center text-lg font-bold border border-neutral-200">
+                <div className="w-10 h-10 rounded-2xl bg-gradient-to-tr from-primary to-rose-500 shadow-xl flex items-center justify-center text-lg font-bold border-2 border-white">
                   ⚡
                 </div>
               </div>
             </div>
 
-            {/* Note alert */}
-            <p className="text-[11px] text-muted-foreground text-center bg-muted/40 px-3 py-1.5 rounded-xl border border-white/[0.07]">
-              Remark / Note in UPI app will be set to: <strong className="text-primary font-mono">{shortCode}</strong>
+            {/* Note badge */}
+            <p className="text-xs text-slate-300 text-center bg-black/40 px-3.5 py-1.5 rounded-2xl border border-white/10">
+              UPI Remark/Note will auto-fill to:{' '}
+              <strong className="text-orange-400 font-mono font-black">{shortCode}</strong>
             </p>
 
-            {/* Pay via UPI App button (for mobile browsers) */}
+            {/* Pay via UPI App button (Mobile 1-Tap) */}
             <a
               href={upiUri}
-              className="w-full sm:hidden flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-primary text-primary-foreground font-bold text-sm shadow-md hover:bg-primary/90 transition active:scale-95"
+              className="w-full sm:hidden flex items-center justify-center gap-2.5 py-3.5 px-4 rounded-2xl bg-gradient-to-r from-primary via-orange-500 to-rose-500 text-white font-black text-sm shadow-[0_0_25px_rgba(255,94,14,0.4)] transition active:scale-95 border border-white/20"
             >
               <Smartphone className="h-4 w-4" />
               Pay via UPI App (GPay / PhonePe / Paytm)
             </a>
 
-            {/* UPI ID copy */}
-            <div className="flex items-center gap-3 w-full px-3.5 py-2.5 rounded-xl bg-muted/30 border border-white/[0.07]">
+            {/* UPI ID copy box */}
+            <div className="flex items-center gap-3 w-full px-4 py-3 rounded-2xl bg-black/40 border border-white/10">
               <div className="flex-1 min-w-0">
-                <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">UPI ID</p>
-                <p className="font-mono font-bold text-xs text-foreground truncate">{upiId}</p>
+                <p className="text-[10px] text-slate-400 uppercase font-black tracking-wider">Merchant UPI ID</p>
+                <p className="font-mono font-bold text-xs text-white truncate">{upiId}</p>
               </div>
               <button
                 type="button"
                 onClick={handleCopy}
-                className={`flex items-center gap-1.5 rounded-lg px-2.5 py-1 text-xs font-bold transition-all ${
+                className={`flex items-center gap-1.5 rounded-xl px-3 py-1.5 text-xs font-extrabold transition-all duration-200 ${
                   copied
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30'
-                    : 'bg-primary/15 text-primary border border-primary/25 hover:bg-primary hover:text-primary-foreground'
+                    ? 'bg-emerald-500 text-white shadow-[0_0_15px_rgba(16,185,129,0.5)]'
+                    : 'bg-primary/20 text-orange-300 border border-primary/30 hover:bg-primary hover:text-white'
                 }`}
               >
-                {copied ? <Check className="h-3 w-3" /> : <Copy className="h-3 w-3" />}
+                {copied ? <Check className="h-3.5 w-3.5 stroke-[3]" /> : <Copy className="h-3.5 w-3.5" />}
                 {copied ? 'Copied' : 'Copy'}
               </button>
             </div>
           </div>
 
-          {/* Form */}
-          <form onSubmit={handleSubmit} className="p-6 flex flex-col gap-4">
+          {/* Verification Form */}
+          <form onSubmit={handleSubmit} className="p-6 sm:p-7 flex flex-col gap-4">
             {/* UTR Input */}
             <div className="space-y-1.5">
               <div className="flex items-center justify-between">
-                <Label htmlFor="utr" className="text-xs font-bold flex items-center gap-1.5">
-                  12-Digit UPI Reference (UTR) <span className="text-primary">*</span>
+                <Label htmlFor="utr" className="text-xs font-black text-white flex items-center gap-1.5">
+                  12-Digit UPI Ref / UTR <span className="text-primary">*</span>
                 </Label>
-                <span className="text-[10px] font-mono text-muted-foreground">{utr.length}/12</span>
+                <span className="text-[11px] font-mono font-bold text-slate-400">
+                  {utr.length}/12
+                </span>
               </div>
               <Input
                 id="utr"
@@ -327,47 +338,49 @@ function CheckoutContent() {
                 value={utr}
                 onChange={(e) => setUtr(e.target.value.replace(/\D/g, '').slice(0, 12))}
                 required
-                className="font-mono text-center text-base tracking-widest rounded-xl bg-muted/30 border-white/10 focus:border-primary/50 h-11"
+                className="font-mono text-center text-lg font-black tracking-widest rounded-2xl bg-black/40 border-white/10 focus:border-primary/60 h-12 text-white"
               />
               {/* Animated Progress Bar */}
-              <div className="h-1 rounded-full bg-muted/60 overflow-hidden">
+              <div className="h-1.5 rounded-full bg-slate-800 overflow-hidden">
                 <div
                   className={`h-full transition-all duration-300 rounded-full ${
-                    utr.length === 12 ? 'bg-emerald-500' : 'bg-primary'
+                    utr.length === 12
+                      ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.6)]'
+                      : 'bg-primary'
                   }`}
                   style={{ width: `${(utr.length / 12) * 100}%` }}
                 />
               </div>
-              <p className="text-[10px] text-muted-foreground">
-                Found in your payment app under &quot;UPI Ref No.&quot; or &quot;UTR&quot;
+              <p className="text-[11px] text-slate-400">
+                Found in your banking app receipt under &quot;UPI Ref No&quot; or &quot;UTR&quot;
               </p>
             </div>
 
             {/* Payer Name (Optional) */}
             <div className="space-y-1">
-              <Label htmlFor="payerName" className="text-xs font-semibold text-muted-foreground">
+              <Label htmlFor="payerName" className="text-xs font-bold text-slate-400">
                 Payer Name on UPI App (Optional)
               </Label>
               <Input
                 id="payerName"
-                placeholder={customerName || 'Name shown on your Google Pay / PhonePe'}
+                placeholder={customerName || 'Name on GPay / PhonePe'}
                 value={payerName}
                 onChange={(e) => setPayerName(e.target.value)}
-                className="rounded-xl bg-muted/30 border-white/10 text-xs h-9"
+                className="rounded-2xl bg-black/40 border-white/10 text-xs h-10 text-white font-medium"
               />
             </div>
 
             {/* Screenshot Upload (Optional) */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-muted-foreground flex items-center justify-between">
+              <Label className="text-xs font-bold text-slate-400 flex items-center justify-between">
                 <span>Payment Screenshot (Optional)</span>
-                <span className="text-[10px] text-muted-foreground">Fast Auto-Compress</span>
+                <span className="text-[10px] text-emerald-400 font-semibold">⚡ Instant Compress</span>
               </Label>
 
               {screenshotBase64 ? (
-                <div className="relative rounded-xl border border-white/10 overflow-hidden bg-muted/20 p-2 flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="relative h-10 w-10 rounded-lg overflow-hidden border border-white/10">
+                <div className="relative rounded-2xl border border-white/10 overflow-hidden bg-black/40 p-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="relative h-12 w-12 rounded-xl overflow-hidden border border-white/10">
                       <Image
                         src={screenshotBase64}
                         alt="Screenshot Preview"
@@ -376,26 +389,28 @@ function CheckoutContent() {
                         className="object-cover"
                       />
                     </div>
-                    <span className="text-xs text-emerald-400 font-semibold flex items-center gap-1">
-                      <ShieldCheck className="h-3.5 w-3.5" /> Screenshot Attached
+                    <span className="text-xs text-emerald-400 font-bold flex items-center gap-1.5">
+                      <ShieldCheck className="h-4 w-4" /> Screenshot Attached
                     </span>
                   </div>
                   <button
                     type="button"
                     onClick={() => setScreenshotBase64(null)}
-                    className="p-1 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-destructive transition"
+                    className="p-1.5 rounded-xl hover:bg-white/10 text-slate-400 hover:text-rose-400 transition"
                   >
                     <X className="h-4 w-4" />
                   </button>
                 </div>
               ) : (
-                <label className="flex items-center justify-center gap-2 border border-dashed border-white/15 hover:border-primary/40 rounded-xl p-3 cursor-pointer bg-muted/20 hover:bg-muted/30 transition text-xs text-muted-foreground">
+                <label className="flex items-center justify-center gap-2.5 border border-dashed border-white/20 hover:border-primary/50 rounded-2xl p-3.5 cursor-pointer bg-black/20 hover:bg-black/40 transition text-xs text-slate-300">
                   {isCompressingImg ? (
                     <Loader2 className="h-4 w-4 animate-spin text-primary" />
                   ) : (
                     <UploadCloud className="h-4 w-4 text-primary" />
                   )}
-                  <span>{isCompressingImg ? 'Compressing...' : 'Upload payment confirmation screenshot'}</span>
+                  <span className="font-semibold">
+                    {isCompressingImg ? 'Compressing receipt...' : 'Upload payment confirmation screenshot'}
+                  </span>
                   <input
                     type="file"
                     accept="image/*"
@@ -411,17 +426,17 @@ function CheckoutContent() {
             <Button
               type="submit"
               disabled={isSubmitting || utr.length !== 12 || isCompressingImg}
-              className="w-full h-12 rounded-xl font-bold text-sm gap-2 shadow-[0_4px_24px_oklch(0.72_0.18_50/25%)] mt-2"
+              className="w-full h-14 rounded-2xl font-black text-base gap-2 bg-gradient-to-r from-primary via-orange-500 to-rose-500 text-white shadow-[0_0_30px_rgba(255,94,14,0.4)] transition-all hover:scale-[1.02] active:scale-[0.98] border border-white/20 disabled:opacity-50 mt-2"
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Verifying Submission...
+                  <Loader2 className="h-5 w-5 animate-spin" />
+                  <span>Submitting to Kitchen...</span>
                 </>
               ) : (
                 <>
-                  <ShieldCheck className="h-4 w-4" />
-                  Submit Payment Details
+                  <ShieldCheck className="h-5 w-5" />
+                  <span>Submit Payment Details</span>
                 </>
               )}
             </Button>
@@ -432,10 +447,10 @@ function CheckoutContent() {
         <button
           type="button"
           onClick={() => router.push('/cart')}
-          className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors mx-auto"
+          className="flex items-center justify-center gap-1.5 text-xs font-bold text-slate-400 hover:text-white transition-colors mx-auto p-2"
         >
           <ArrowLeft className="h-3.5 w-3.5" />
-          Cancel &amp; Back to Cart
+          Cancel &amp; Return to Tray
         </button>
       </div>
     </div>
@@ -446,8 +461,8 @@ export default function CheckoutPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex-1 w-full flex items-center justify-center min-h-[60vh]">
-          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <div className="flex-1 w-full flex items-center justify-center min-h-[70vh]">
+          <Loader2 className="h-10 w-10 animate-spin text-primary" />
         </div>
       }
     >

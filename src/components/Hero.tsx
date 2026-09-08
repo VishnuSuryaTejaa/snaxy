@@ -1,8 +1,19 @@
 'use client'
 
 import Link from 'next/link'
-import { ArrowRight, Coffee, Pizza, Croissant } from 'lucide-react'
+import { ArrowRight, Flame, Zap, ShieldCheck, Clock, Sparkles } from 'lucide-react'
 import { motion, Variants } from 'framer-motion'
+
+const MARQUEE_ITEMS = [
+  '🔥 Crispy Chicken Burger',
+  '🌯 Paneer Tikka Kathi Roll',
+  '☕ Iced Caramel Cold Coffee',
+  '🍟 Peri-Peri Loaded Fries',
+  '🥟 Steamed Corn & Cheese Momos',
+  '🍕 Double Cheese Margherita',
+  '🧋 Classic Hazelnut Frappé',
+  '🥪 Grilled Triple Club Sandwich',
+]
 
 export function Hero() {
   const containerVariants: Variants = {
@@ -10,88 +21,134 @@ export function Hero() {
     visible: {
       opacity: 1,
       transition: {
-        staggerChildren: 0.15,
-        delayChildren: 0.1,
+        staggerChildren: 0.12,
+        delayChildren: 0.05,
       },
     },
   }
 
   const itemVariants: Variants = {
-    hidden: { opacity: 0, y: 20 },
+    hidden: { opacity: 0, y: 25 },
     visible: {
       opacity: 1,
       y: 0,
-      transition: { type: 'spring', stiffness: 100, damping: 15 },
+      transition: { type: 'spring', stiffness: 120, damping: 14 },
     },
   }
 
   return (
-    <div className="relative overflow-hidden bg-black/40 backdrop-blur-xl border-b border-white/10 pt-24 pb-16 sm:pt-32 sm:pb-24 lg:pb-32 px-4 sm:px-6 lg:px-8 text-center mt-16">
-      <div className="absolute inset-0 z-0">
-        <div className="absolute inset-0 bg-gradient-to-br from-action-primary/10 via-transparent to-rose-500/10" />
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.5, scale: 1 }}
-          transition={{ duration: 2, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-          className="absolute top-1/4 left-1/4 w-64 h-64 bg-action-primary/20 rounded-full blur-3xl" 
-        />
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 0.5, scale: 1 }}
-          transition={{ duration: 2, delay: 1, repeat: Infinity, repeatType: "mirror", ease: "easeInOut" }}
-          className="absolute bottom-1/4 right-1/4 w-64 h-64 bg-rose-500/20 rounded-full blur-3xl" 
-        />
+    <div className="relative overflow-hidden pt-12 pb-16 sm:pt-20 sm:pb-24 px-4 sm:px-6 lg:px-8 text-center">
+      {/* Dynamic Background Aurora Mesh */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden z-0">
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[400px] bg-gradient-to-b from-primary/15 via-rose-500/10 to-transparent blur-[120px] rounded-full" />
+        <div className="absolute top-1/4 left-1/10 w-72 h-72 bg-primary/20 rounded-full blur-[90px] animate-aurora" />
+        <div className="absolute top-1/3 right-1/10 w-80 h-80 bg-rose-500/15 rounded-full blur-[100px] animate-aurora" style={{ animationDelay: '3s' }} />
       </div>
 
-      <motion.div 
+      <motion.div
         variants={containerVariants}
         initial="hidden"
         animate="visible"
-        className="relative z-10 max-w-4xl mx-auto flex flex-col items-center"
+        className="relative z-10 max-w-5xl mx-auto flex flex-col items-center"
       >
-        <motion.div variants={itemVariants} className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-white/5 border border-white/10 text-action-primary-fg text-sm font-medium mb-8">
-          <span className="flex h-2 w-2 rounded-full bg-action-primary"></span>
-          Fresh & delicious, every day
+        {/* Top Floating Pill */}
+        <motion.div
+          variants={itemVariants}
+          className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full glass-pill border border-white/10 text-xs font-bold text-orange-300 shadow-[0_0_20px_-3px_rgba(255,94,14,0.3)] mb-8"
+        >
+          <span className="flex h-2 w-2 rounded-full bg-primary animate-pulse"></span>
+          <span className="tracking-wide uppercase text-[11px]">⚡ Fast-Track Campus Dining · Zero Waiting</span>
         </motion.div>
-        
-        <motion.h1 variants={itemVariants} className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white mb-6">
-          Savor the <span className="text-transparent bg-clip-text bg-gradient-to-r from-action-primary to-rose-400">Flavor</span>,<br />
-          Skip the Wait.
+
+        {/* Hero Main Heading */}
+        <motion.h1
+          variants={itemVariants}
+          className="text-4xl sm:text-6xl lg:text-7xl font-black tracking-tighter text-white mb-6 leading-[1.08] font-heading"
+        >
+          Craving Something <span className="gradient-hero-title">Legendary?</span>
+          <br />
+          <span className="gradient-text">Tap. Pay. Munch.</span>
         </motion.h1>
-        
-        <motion.p variants={itemVariants} className="text-lg sm:text-xl text-gray-300 max-w-2xl mb-10 leading-relaxed">
-          Order your favorite meals, snacks, and beverages with a single tap. Premium ingredients, crafted with care, and ready when you are.
+
+        {/* Subtitle */}
+        <motion.p
+          variants={itemVariants}
+          className="text-base sm:text-xl text-slate-300 max-w-2xl mb-10 leading-relaxed font-medium"
+        >
+          Skip the endless cafeteria line. Order delicious hot meals, crispy snacks, and icy brews with instant 1-tap UPI QR. Made fresh, ready in minutes.
         </motion.p>
 
-        <motion.div variants={itemVariants} className="flex flex-col sm:flex-row gap-4 items-center justify-center">
+        {/* CTA Buttons */}
+        <motion.div
+          variants={itemVariants}
+          className="flex flex-col sm:flex-row gap-4 items-center justify-center w-full max-w-md sm:max-w-none"
+        >
           <Link
             href="#menu"
-            className="group inline-flex items-center gap-2 px-8 py-4 rounded-xl bg-gradient-to-r from-orange-500 to-rose-500 text-white font-semibold text-lg transition-all hover:scale-105 hover:shadow-[0_0_40px_-10px_rgba(249,115,22,0.5)] active:scale-95"
             onClick={(e) => {
-              e.preventDefault();
-              document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' });
+              e.preventDefault()
+              document.getElementById('menu')?.scrollIntoView({ behavior: 'smooth' })
             }}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2.5 px-8 py-4 rounded-2xl bg-gradient-to-r from-primary via-orange-500 to-rose-500 text-white font-black text-base transition-all duration-300 hover:scale-[1.03] hover:shadow-[0_0_35px_rgba(255,94,14,0.6)] active:scale-[0.98] border border-white/20"
           >
-            Order Now
+            <Flame className="w-5 h-5 fill-white" />
+            <span>Order Your Bites</span>
             <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
           </Link>
+
+          <a
+            href="#perks"
+            onClick={(e) => {
+              e.preventDefault()
+              document.getElementById('perks')?.scrollIntoView({ behavior: 'smooth' })
+            }}
+            className="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-4 rounded-2xl glass hover:bg-white/[0.08] text-slate-200 hover:text-white font-bold text-base transition-all border border-white/10 hover:border-white/20 active:scale-[0.98]"
+          >
+            <Sparkles className="w-4 h-4 text-primary" />
+            <span>Why Snaxy?</span>
+          </a>
         </motion.div>
 
-        <motion.div variants={itemVariants} className="mt-16 flex items-center justify-center gap-8 text-gray-400 opacity-70">
-          <div className="flex flex-col items-center gap-2">
-            <Pizza className="w-8 h-8" />
-            <span className="text-sm">Hot Meals</span>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <Coffee className="w-8 h-8" />
-            <span className="text-sm">Beverages</span>
-          </div>
-          <div className="flex flex-col items-center gap-2">
-            <Croissant className="w-8 h-8" />
-            <span className="text-sm">Bakery</span>
-          </div>
+        {/* Dynamic Feature Badges */}
+        <motion.div
+          id="perks"
+          variants={itemVariants}
+          className="mt-14 grid grid-cols-2 md:grid-cols-4 gap-3.5 w-full max-w-4xl"
+        >
+          {[
+            { icon: Clock, title: '5-Min Prep', desc: 'Zero cafeteria waiting', color: 'text-orange-400' },
+            { icon: Zap, title: 'Instant UPI', desc: 'Scan & pay seamlessly', color: 'text-amber-400' },
+            { icon: Flame, title: 'Hot & Fresh', desc: 'Cooked right on order', color: 'text-rose-400' },
+            { icon: ShieldCheck, title: '100% Verified', desc: 'Secure order receipts', color: 'text-emerald-400' },
+          ].map((item, idx) => {
+            const Icon = item.icon
+            return (
+              <div
+                key={idx}
+                className="flex flex-col items-center sm:items-start p-4 rounded-2xl glass border border-white/[0.07] hover:border-primary/30 transition-all duration-300 group text-center sm:text-left"
+              >
+                <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.06] mb-2.5 group-hover:scale-110 transition-transform">
+                  <Icon className={`w-5 h-5 ${item.color}`} />
+                </div>
+                <h4 className="font-extrabold text-sm text-white leading-tight font-heading">{item.title}</h4>
+                <p className="text-[11px] text-slate-400 mt-0.5 leading-snug">{item.desc}</p>
+              </div>
+            )
+          })}
         </motion.div>
       </motion.div>
+
+      {/* Trending Bites Live Marquee Banner */}
+      <div className="mt-14 -mx-4 sm:-mx-8 border-y border-white/[0.08] bg-black/40 backdrop-blur-md py-3 overflow-hidden">
+        <div className="animate-marquee gap-8 items-center text-xs sm:text-sm font-black tracking-tight text-slate-300">
+          {[...MARQUEE_ITEMS, ...MARQUEE_ITEMS].map((item, index) => (
+            <div key={index} className="flex items-center gap-6 shrink-0">
+              <span className="hover:text-primary transition-colors cursor-default">{item}</span>
+              <span className="text-white/20">✦</span>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   )
 }

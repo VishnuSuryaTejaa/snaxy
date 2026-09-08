@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import Link from 'next/link'
-import { ArrowRight, Loader2, KeyRound, Phone, User } from 'lucide-react'
+import { ArrowRight, Loader2, KeyRound, Phone, User, Sparkles } from 'lucide-react'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -24,7 +24,7 @@ export default function RegisterPage() {
       const res = await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, phone, password })
+        body: JSON.stringify({ name, phone, password }),
       })
 
       const data = await res.json()
@@ -42,71 +42,79 @@ export default function RegisterPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden bg-background">
-      <div className="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-[128px] mix-blend-screen pointer-events-none" />
-      <div className="absolute bottom-1/4 left-1/4 w-96 h-96 bg-blue-500/10 rounded-full blur-[128px] mix-blend-screen pointer-events-none" />
-      
-      <div className="w-full max-w-md p-6 relative z-10">
-        <div className="glass rounded-3xl p-8 shadow-2xl border border-white/10 backdrop-blur-xl animate-in fade-in zoom-in duration-500">
+    <div className="min-h-[85vh] flex items-center justify-center relative overflow-hidden px-4 py-12">
+      {/* Aurora mesh */}
+      <div className="absolute top-1/4 right-1/4 w-80 h-80 bg-primary/20 rounded-full blur-[100px] pointer-events-none" />
+      <div className="absolute bottom-1/4 left-1/4 w-80 h-80 bg-rose-500/15 rounded-full blur-[100px] pointer-events-none" />
+
+      <div className="w-full max-w-md relative z-10">
+        <div className="rounded-3xl glass-card p-8 sm:p-10 shadow-2xl border border-white/[0.08] animate-fade-in-up">
           <div className="text-center mb-8">
-            <div className="w-16 h-16 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center mx-auto mb-6 shadow-[0_0_15px_rgba(var(--primary),0.5)]">
-              <span className="text-3xl leading-none">🚀</span>
+            <div className="w-16 h-16 rounded-2xl bg-gradient-to-tr from-primary to-rose-500 flex items-center justify-center mx-auto mb-5 shadow-[0_0_25px_rgba(255,94,14,0.6)] border border-white/20">
+              <span className="text-2xl leading-none">🚀</span>
             </div>
-            <h1 className="text-3xl font-extrabold tracking-tight mb-2">Create Account</h1>
-            <p className="text-muted-foreground">Join Snaxy to start ordering</p>
+            <h1 className="text-3xl font-black tracking-tight text-white font-heading">
+              Join Snaxy
+            </h1>
+            <p className="text-slate-400 text-xs mt-1 font-semibold">
+              Instant campus dining with 1-tap UPI QR checkout
+            </p>
           </div>
 
           {error && (
-            <div className="mb-6 p-4 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-sm text-center animate-shake">
+            <div className="mb-6 p-4 rounded-2xl bg-rose-950/40 border border-rose-500/30 text-rose-300 text-xs text-center font-bold">
               {error}
             </div>
           )}
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80 pl-1">Full Name</label>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-300 pl-1">Full Name</label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <User className="w-5 h-5" />
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                  <User className="w-4 h-4" />
                 </div>
                 <input
                   type="text"
                   name="name"
                   required
-                  placeholder="Enter your name"
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  placeholder="e.g. John Doe"
+                  className="w-full h-12 bg-black/40 border border-white/10 rounded-2xl pl-11 pr-4 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all font-medium"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80 pl-1">Phone Number</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-300 pl-1">Phone Number</label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <Phone className="w-5 h-5" />
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                  <Phone className="w-4 h-4" />
                 </div>
                 <input
                   type="tel"
                   name="phone"
                   required
-                  placeholder="Enter your phone number"
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  placeholder="10-digit mobile number"
+                  pattern="[6-9][0-9]{9}"
+                  maxLength={10}
+                  className="w-full h-12 bg-black/40 border border-white/10 rounded-2xl pl-11 pr-4 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all font-mono"
                 />
               </div>
             </div>
 
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80 pl-1">Password</label>
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-300 pl-1">Create Password</label>
               <div className="relative">
-                <div className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">
-                  <KeyRound className="w-5 h-5" />
+                <div className="absolute left-3.5 top-1/2 -translate-y-1/2 text-slate-400">
+                  <KeyRound className="w-4 h-4" />
                 </div>
                 <input
                   type="password"
                   name="password"
                   required
-                  placeholder="Create a password"
-                  className="w-full h-12 bg-white/5 border border-white/10 rounded-xl pl-10 pr-4 text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 transition-all"
+                  placeholder="At least 6 characters"
+                  minLength={6}
+                  className="w-full h-12 bg-black/40 border border-white/10 rounded-2xl pl-11 pr-4 text-white text-sm placeholder:text-slate-500 focus:outline-none focus:border-primary/60 focus:ring-2 focus:ring-primary/20 transition-all"
                 />
               </div>
             </div>
@@ -114,24 +122,23 @@ export default function RegisterPage() {
             <button
               type="submit"
               disabled={isLoading}
-              className="w-full h-12 bg-primary hover:bg-primary/90 text-primary-foreground rounded-xl font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 group relative overflow-hidden mt-8 active:scale-95"
+              className="w-full h-13 bg-gradient-to-r from-primary via-orange-500 to-rose-500 text-white rounded-2xl font-black text-sm tracking-wide transition-all duration-300 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_25px_rgba(255,94,14,0.4)] disabled:opacity-50 flex items-center justify-center gap-2 mt-6 border border-white/20"
             >
-              <div className="absolute inset-0 bg-white/20 translate-y-full group-hover:translate-y-0 transition-transform" />
               {isLoading ? (
                 <Loader2 className="w-5 h-5 animate-spin" />
               ) : (
                 <>
-                  <span className="relative z-10">Sign Up</span>
-                  <ArrowRight className="w-5 h-5 relative z-10 group-hover:translate-x-1 transition-transform" />
+                  <span>Create Account</span>
+                  <ArrowRight className="w-4 h-4" />
                 </>
               )}
             </button>
           </form>
 
-          <div className="mt-8 text-center text-sm text-muted-foreground">
+          <div className="mt-6 text-center text-xs text-slate-400 font-medium">
             Already have an account?{' '}
-            <Link href="/login" className="text-primary font-semibold hover:underline">
-              Sign in
+            <Link href="/login" className="text-orange-400 font-bold hover:underline">
+              Sign in here
             </Link>
           </div>
         </div>
