@@ -19,40 +19,43 @@ export function Footer() {
   const linkedInUrl = 'https://www.linkedin.com/in/vishnu-surya-teja-veeraganti-1b172827a'
 
   return (
-    <footer className="w-full border-t border-white/[0.08] bg-black/80 backdrop-blur-2xl py-8 px-4 sm:px-6 relative z-30 mt-auto">
-      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5 text-xs">
+    <footer className="w-full border-t border-white/[0.06] bg-slate-950/80 backdrop-blur-2xl py-8 px-4 sm:px-6 relative z-30 mt-auto">
+      {/* Ambient background light line */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-3xl h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent pointer-events-none" />
+
+      <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
         {/* Left: Brand tag */}
-        <div className="flex items-center gap-2.5">
-          <span className="font-brand text-lg font-black tracking-wider gradient-text">
+        <div className="flex items-center gap-3">
+          <span className="font-brand text-2xl font-black tracking-wider gradient-text drop-shadow-[0_0_15px_rgba(255,85,0,0.4)]">
             SNAXY
           </span>
-          <span className="text-white/20">|</span>
-          <span className="text-[11px] font-semibold text-slate-400 font-sans">
-            Instant Campus Dining
+          <span className="text-white/20 text-xs">/</span>
+          <span className="text-xs font-semibold text-slate-400 font-sans tracking-wide">
+            Instant Campus Bites
           </span>
         </div>
 
-        {/* Center: Interactive High-Tech Creator Badge */}
+        {/* Right: Interactive High-Tech Creator Badge */}
         <div className="flex items-center">
           <a
             href={linkedInUrl}
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Connect with Vishnu Surya Teja on LinkedIn"
-            className="relative group block rounded-2xl p-[1.5px] transition-all duration-300 hover:scale-[1.05] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50"
+            className="relative group block rounded-2xl p-[1.5px] transition-all duration-300 hover:scale-[1.04] active:scale-[0.98] focus:outline-none focus:ring-2 focus:ring-primary/50"
           >
             {/* Pulsing Animated Neon Glow Backdrop */}
             <div className="absolute -inset-1 rounded-2xl bg-gradient-to-r from-orange-500 via-rose-500 to-sky-500 opacity-40 blur-md group-hover:opacity-100 group-hover:blur-lg transition-all duration-500 animate-pulse" />
 
             {/* Glowing Border Wrap */}
-            <div className="relative flex items-center gap-2 sm:gap-2.5 px-4 py-2 rounded-2xl bg-slate-950/90 backdrop-blur-xl border border-white/20 group-hover:border-primary/60 shadow-2xl transition-all">
+            <div className="relative flex items-center gap-2.5 sm:gap-3 px-4 py-2 rounded-2xl bg-slate-950/90 backdrop-blur-xl border border-white/20 group-hover:border-primary/60 shadow-2xl transition-all">
               {/* Creator Icon */}
               <div className="w-6 h-6 rounded-lg bg-[#0077b5] flex items-center justify-center text-white shadow-[0_0_12px_rgba(0,119,181,0.6)] group-hover:scale-110 transition-transform">
                 <LinkedInIcon className="w-3.5 h-3.5" />
               </div>
 
               <div className="flex items-center gap-1.5 font-sans">
-                <span className="text-slate-300 font-medium text-[11px] sm:text-xs">
+                <span className="text-slate-300 font-medium text-xs">
                   Designed & Developed by
                 </span>
                 <span className="font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-orange-400 via-rose-400 to-amber-300 font-display text-xs sm:text-sm tracking-tight drop-shadow-[0_0_12px_rgba(255,85,0,0.5)] group-hover:from-white group-hover:to-orange-300 transition-all underline-offset-4 group-hover:underline">
@@ -61,7 +64,7 @@ export function Footer() {
               </div>
 
               {/* Action Prompt Pill */}
-              <div className="flex items-center gap-1 pl-1.5 pr-2 py-0.5 rounded-full bg-white/[0.08] border border-white/10 text-[10px] font-bold text-sky-300 group-hover:bg-[#0077b5]/40 group-hover:border-sky-400/50 group-hover:text-white transition-all shadow-inner">
+              <div className="flex items-center gap-1 pl-2 pr-2.5 py-0.5 rounded-full bg-white/[0.08] border border-white/10 text-[10px] font-bold text-sky-300 group-hover:bg-[#0077b5]/40 group-hover:border-sky-400/50 group-hover:text-white transition-all shadow-inner">
                 <span>Connect</span>
                 <ExternalLink className="w-2.5 h-2.5 transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-transform" />
               </div>
@@ -70,12 +73,6 @@ export function Footer() {
               <Sparkles className="w-3.5 h-3.5 text-amber-400 group-hover:text-amber-300 group-hover:rotate-45 transition-all duration-300 opacity-90 hidden sm:inline-block" />
             </div>
           </a>
-        </div>
-
-        {/* Right: Copyright & Status */}
-        <div className="flex items-center gap-2 text-[11px] text-slate-400 font-sans">
-          <span className="inline-block w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_#10b981] animate-pulse" />
-          <span>© {new Date().getFullYear()} Snaxy · All rights reserved</span>
         </div>
       </div>
     </footer>
