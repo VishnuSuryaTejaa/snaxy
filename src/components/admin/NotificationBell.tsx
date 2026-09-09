@@ -195,13 +195,13 @@ export default function NotificationBell() {
             playNotificationChime()
           }
         }}
-        className="relative p-2 rounded-xl text-neutral-600 hover:text-neutral-900 hover:bg-neutral-100 transition-colors focus:outline-none"
+        className="relative p-2 rounded-xl text-slate-300 hover:text-white hover:bg-white/10 transition-colors focus:outline-none"
         title="Admin Notifications"
         aria-label="Admin Notifications"
       >
         <span className="text-xl">🔔</span>
         {unreadCount > 0 && (
-          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-xs font-bold text-white shadow-sm ring-2 ring-white animate-pulse">
+          <span className="absolute -top-1 -right-1 flex h-5 min-w-5 items-center justify-center rounded-full bg-rose-500 px-1.5 text-xs font-black text-white shadow-[0_0_12px_rgba(244,63,94,0.6)] ring-2 ring-black animate-pulse font-mono">
             {unreadCount > 99 ? '99+' : unreadCount}
           </span>
         )}
@@ -209,13 +209,13 @@ export default function NotificationBell() {
 
       {/* Dropdown Drawer */}
       {isOpen && (
-        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl bg-white shadow-2xl ring-1 ring-black/5 z-50 overflow-hidden">
+        <div className="absolute right-0 mt-2 w-80 sm:w-96 rounded-3xl bg-slate-950/95 backdrop-blur-2xl border border-white/15 shadow-[0_20px_50px_rgba(0,0,0,0.9)] z-50 overflow-hidden font-sans">
           {/* Header */}
-          <div className="flex items-center justify-between border-b border-neutral-100 px-4 py-3 bg-neutral-50/80">
+          <div className="flex items-center justify-between border-b border-white/[0.08] px-4 py-3.5 bg-white/[0.03]">
             <div className="flex items-center gap-2">
-              <span className="font-semibold text-neutral-900 text-sm">Notifications</span>
+              <span className="font-extrabold text-white text-sm">Notifications</span>
               {unreadCount > 0 && (
-                <span className="bg-amber-100 text-amber-800 text-xs font-medium px-2 py-0.5 rounded-full">
+                <span className="bg-primary/20 border border-primary/30 text-orange-300 text-[11px] font-bold px-2 py-0.5 rounded-full font-mono">
                   {unreadCount} new
                 </span>
               )}
@@ -224,7 +224,7 @@ export default function NotificationBell() {
               <button
                 onClick={markAllAsRead}
                 disabled={loading}
-                className="text-xs text-amber-600 hover:text-amber-700 font-medium"
+                className="text-xs text-orange-400 hover:text-orange-300 font-bold transition"
               >
                 Mark all read
               </button>
@@ -233,11 +233,11 @@ export default function NotificationBell() {
 
           {/* Web Push Banner in Drawer */}
           {pushStatus === 'prompt' && (
-            <div className="bg-amber-50 border-b border-amber-100 p-3 flex items-center justify-between text-xs">
-              <span className="text-amber-800 font-medium">Get instant alerts even when tab is closed</span>
+            <div className="bg-primary/10 border-b border-primary/20 p-3 flex items-center justify-between text-xs gap-2">
+              <span className="text-slate-200 font-medium leading-tight">Instant alerts even when tab is closed</span>
               <button
                 onClick={subscribeToWebPush}
-                className="px-2.5 py-1 bg-amber-500 hover:bg-amber-600 text-white rounded-lg font-semibold transition"
+                className="px-2.5 py-1 bg-gradient-to-r from-primary to-rose-500 hover:opacity-90 text-white rounded-xl font-bold text-xs shrink-0 shadow-md transition"
               >
                 Enable
               </button>
@@ -245,10 +245,10 @@ export default function NotificationBell() {
           )}
 
           {/* Notification List */}
-          <div className="max-h-[380px] overflow-y-auto divide-y divide-neutral-100">
+          <div className="max-h-[380px] overflow-y-auto divide-y divide-white/[0.06]">
             {notifications.length === 0 ? (
-              <div className="p-8 text-center text-neutral-400 text-sm">
-                <span className="text-3xl block mb-2">🔕</span>
+              <div className="p-8 text-center text-slate-400 text-sm">
+                <span className="text-3xl block mb-2 opacity-60">🔕</span>
                 No notifications yet
               </div>
             ) : (
@@ -256,8 +256,8 @@ export default function NotificationBell() {
                 <div
                   key={item.id}
                   onClick={() => !item.read && markSingleAsRead(item.id)}
-                  className={`p-3.5 hover:bg-neutral-50 transition cursor-pointer flex gap-3 items-start ${
-                    !item.read ? 'bg-amber-50/40' : ''
+                  className={`p-3.5 hover:bg-white/[0.06] transition cursor-pointer flex gap-3 items-start ${
+                    !item.read ? 'bg-primary/10' : ''
                   }`}
                 >
                   <span className="text-lg mt-0.5">
@@ -270,11 +270,11 @@ export default function NotificationBell() {
                       : '📦'}
                   </span>
                   <div className="flex-1 min-w-0">
-                    <p className={`text-xs ${!item.read ? 'font-bold text-neutral-900' : 'font-medium text-neutral-700'}`}>
+                    <p className={`text-xs ${!item.read ? 'font-black text-white' : 'font-medium text-slate-300'}`}>
                       {item.title}
                     </p>
-                    <p className="text-xs text-neutral-500 mt-0.5 line-clamp-2">{item.message}</p>
-                    <p className="text-[10px] text-neutral-400 mt-1">
+                    <p className="text-xs text-slate-400 mt-0.5 line-clamp-2 leading-relaxed">{item.message}</p>
+                    <p className="text-[10px] font-mono text-slate-500 mt-1">
                       {new Date(item.createdAt).toLocaleTimeString([], {
                         hour: '2-digit',
                         minute: '2-digit',
@@ -282,7 +282,7 @@ export default function NotificationBell() {
                     </p>
                   </div>
                   {!item.read && (
-                    <span className="h-2 w-2 rounded-full bg-amber-500 mt-1.5 shrink-0" />
+                    <span className="h-2 w-2 rounded-full bg-primary mt-1.5 shrink-0 shadow-[0_0_8px_rgba(255,94,14,0.8)]" />
                   )}
                 </div>
               ))

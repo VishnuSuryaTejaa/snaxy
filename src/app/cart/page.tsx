@@ -80,7 +80,11 @@ export default function CartPage() {
         body: JSON.stringify({
           ...formData,
           paymentMethod: 'upi',
-          items: items.map((i) => ({ id: i.id, quantity: i.quantity })),
+          items: items.map((i) => ({
+            id: i.menuItemId || i.id,
+            menuItemId: i.menuItemId || i.id,
+            quantity: i.quantity,
+          })),
         }),
       })
 

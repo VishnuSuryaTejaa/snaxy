@@ -119,11 +119,23 @@ export default function LoginPage() {
             </button>
           </form>
 
-          <div className="mt-6 text-center text-xs text-slate-400 font-medium">
-            Don&apos;t have an account?{' '}
-            <Link href="/register" className="text-orange-400 font-bold hover:underline">
-              Create one now
-            </Link>
+          <div className="mt-6 flex flex-col items-center gap-3 text-center text-xs text-slate-400 font-medium">
+            <div>
+              Don&apos;t have an account?{' '}
+              <Link href="/register" className="text-orange-400 font-bold hover:underline">
+                Create one now
+              </Link>
+            </div>
+
+            <div className="w-full pt-3 border-t border-white/[0.08] flex items-center justify-center">
+              <Link
+                href="/admin"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-300 hover:text-white border border-white/[0.08] transition text-xs font-semibold"
+              >
+                <ShieldCheck className="w-3.5 h-3.5 text-primary" />
+                <span>Canteen Staff / Admin Portal</span>
+              </Link>
+            </div>
           </div>
         </div>
       </div>

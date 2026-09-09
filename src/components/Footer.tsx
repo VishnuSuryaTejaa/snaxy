@@ -1,6 +1,7 @@
 'use client'
 
-import { ExternalLink, Sparkles } from 'lucide-react'
+import { ExternalLink, Sparkles, Shield } from 'lucide-react'
+import Link from 'next/link'
 
 function LinkedInIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
   return (
@@ -24,8 +25,8 @@ export function Footer() {
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 max-w-3xl h-px bg-gradient-to-r from-transparent via-primary/40 to-transparent pointer-events-none" />
 
       <div className="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-5">
-        {/* Left: Brand tag */}
-        <div className="flex items-center gap-3">
+        {/* Left: Brand tag & Quick Links */}
+        <div className="flex flex-wrap items-center justify-center sm:justify-start gap-3">
           <span className="font-brand text-2xl font-black tracking-wider gradient-text drop-shadow-[0_0_15px_rgba(255,85,0,0.4)]">
             SNAXY
           </span>
@@ -33,6 +34,14 @@ export function Footer() {
           <span className="text-xs font-semibold text-slate-400 font-sans tracking-wide">
             Instant Campus Bites
           </span>
+          <span className="text-white/20 text-xs hidden sm:inline">•</span>
+          <Link
+            href="/admin"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 border border-white/[0.06] text-xs font-semibold transition"
+          >
+            <Shield className="w-3 h-3 text-primary" />
+            <span>Staff Portal</span>
+          </Link>
         </div>
 
         {/* Right: Interactive High-Tech Creator Badge */}

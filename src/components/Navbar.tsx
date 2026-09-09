@@ -87,13 +87,15 @@ export function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
           </div>
 
           {/* Navigation Controls */}
-          <nav className="flex items-center gap-2 sm:gap-3">
+          <nav className="flex items-center gap-1.5 sm:gap-3">
+            {/* Staff / Kitchen Portal Access (Always visible on mobile & desktop) */}
             <Link
               href="/admin"
-              className="hidden sm:inline-flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold text-slate-400 hover:text-slate-100 hover:bg-white/[0.06] border border-transparent hover:border-white/[0.08] transition-all"
+              className="flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-2xl text-xs font-bold text-slate-300 hover:text-white bg-white/[0.04] sm:bg-transparent hover:bg-white/[0.08] border border-white/[0.08] sm:border-transparent hover:border-white/15 transition-all active:scale-95"
+              title="Staff & Kitchen Portal"
             >
               <Shield className="w-3.5 h-3.5 text-primary" />
-              Staff
+              <span className="text-[11px] sm:text-xs">Staff</span>
             </Link>
 
             <div className="h-5 w-px bg-white/10 hidden sm:block" />

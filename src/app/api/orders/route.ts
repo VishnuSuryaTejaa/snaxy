@@ -48,26 +48,66 @@ export async function POST(request: Request) {
       )
     }
 
-    // Server-side price validation
-    const itemIds = items.map((i: { id: string }) => i.id)
+    // Server-side item & price validation
+    interface OrderInputItem {
+      id?: string
+      menuItemId?: string
+      quantity: number
+    }
+
+    const rawItems = items as OrderInputItem[]
+    const itemIds = rawItems
+      .map((i) => i.menuItemId || i.id)
+      .filter((id): id is string => typeof id === 'string' && /^[0-9a-fA-F]{24}$/.test(id))
+
+    if (itemIds.length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'Invalid items in cart. Please re-add snacks from the menu.' },
+        { status: 400 }
+      )
+    }
+
     const dbItems = await prisma.menuItem.findMany({
       where: { id: { in: itemIds } },
     })
 
     let calculatedTotal = 0
-    const validItems = items.map((item: { id: string; quantity: number }) => {
-      const dbItem = dbItems.find((dbI) => dbI.id === item.id)
-      if (!dbItem) throw new Error(`Item ${item.id} not found`)
+    const validItems = []
 
-      const price = dbItem.price
-      calculatedTotal += price * item.quantity
+    for (const item of rawItems) {
+      const targetId = item.menuItemId || item.id
+      const dbItem = dbItems.find((dbI) => dbI.id === targetId)
 
-      return {
-        menuItemId: item.id,
-        quantity: item.quantity,
-        price: price,
+      if (!dbItem) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: 'One or more items in your tray are no longer available. Please refresh the menu.',
+          },
+          { status: 400 }
+        )
       }
-    })
+
+      if (dbItem.isSoldOut) {
+        return NextResponse.json(
+          {
+            success: false,
+            error: `"${dbItem.name}" is currently sold out. Please remove it from your tray.`,
+          },
+          { status: 400 }
+        )
+      }
+
+      const qty = Math.max(1, Math.floor(Number(item.quantity) || 1))
+      const price = dbItem.price
+      calculatedTotal += price * qty
+
+      validItems.push({
+        menuItemId: dbItem.id,
+        quantity: qty,
+        price: price,
+      })
+    }
 
     const cookieStore = await cookies()
     const rawUserId = cookieStore.get('snaxy_user_session')?.value
