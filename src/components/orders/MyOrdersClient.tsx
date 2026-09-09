@@ -20,6 +20,7 @@ import {
   CreditCard,
   ShoppingBag,
   Sparkles,
+  Phone,
 } from 'lucide-react'
 import { ORDER_STATUS, OrderStatusType } from '@/lib/constants'
 import { toast } from 'sonner'
@@ -36,6 +37,8 @@ export interface UserOrder {
   paymentMethod: string
   status: string
   upiUtr?: string | null
+  deliveryContactPhone?: string | null
+  estimatedTime?: string | null
   createdAt: string
   updatedAt: string
   items: Array<{
@@ -475,6 +478,14 @@ export function MyOrdersClient() {
                     </div>
 
                     <div className="flex items-center gap-2 flex-wrap">
+                      {/* ETA tag if available */}
+                      {order.estimatedTime && (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold rounded-full px-2.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                          <Clock className="w-3 h-3 text-amber-400" />
+                          {order.estimatedTime}
+                        </span>
+                      )}
+
                       {/* Payment method tag */}
                       {order.paymentMethod === 'cash' || order.upiUtr === 'CASH ON DELIVERY' ? (
                         <span className="inline-flex items-center gap-1 text-[11px] font-extrabold rounded-full px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
@@ -585,6 +596,18 @@ export function MyOrdersClient() {
                         <span>
                           <strong className="text-slate-300">For:</strong> {order.customerName}
                         </span>
+                        {order.deliveryContactPhone && (
+                          <>
+                            <span>•</span>
+                            <a
+                              href={`tel:${order.deliveryContactPhone}`}
+                              className="inline-flex items-center gap-1 text-purple-300 hover:text-purple-200 font-bold bg-purple-500/10 border border-purple-500/20 px-2 py-0.5 rounded-md"
+                            >
+                              <Phone className="w-3 h-3 text-purple-400" />
+                              <span>Runner: {order.deliveryContactPhone}</span>
+                            </a>
+                          </>
+                        )}
                       </div>
                     </div>
 

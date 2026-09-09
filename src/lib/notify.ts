@@ -26,6 +26,8 @@ export interface NotifyOrderInput {
   payerName?: string | null
   duplicateUtrFlag?: boolean
   paymentScreenshot?: string | null
+  deliveryContactPhone?: string | null
+  estimatedTime?: string | null
 }
 
 /**

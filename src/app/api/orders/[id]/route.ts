@@ -37,6 +37,8 @@ export async function GET(
         paymentMethod: order.paymentMethod,
         status: order.status,
         upiUtr: order.upiUtr,
+        deliveryContactPhone: order.deliveryContactPhone,
+        estimatedTime: order.estimatedTime,
         items: order.items,
         createdAt: order.createdAt,
       },

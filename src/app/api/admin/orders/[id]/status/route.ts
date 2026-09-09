@@ -4,7 +4,7 @@ import { requireAdmin } from '@/lib/auth'
 import { ORDER_STATUS } from '@/lib/constants'
 import { notifyAdmin } from '@/lib/notify'
 
-// API endpoint to update order status
+// API endpoint to update order status, custom contact phone, and estimated delivery time
 export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -14,20 +14,41 @@ export async function PATCH(
 
   try {
     const body = await request.json()
-    const { status } = body
+    const { status, deliveryContactPhone, estimatedTime } = body
     const resolvedParams = await params
     const { id: orderId } = resolvedParams
 
-    if (!orderId || !status) {
+    if (!orderId) {
       return NextResponse.json(
-        { success: false, error: 'Missing orderId or status' },
+        { success: false, error: 'Missing orderId' },
+        { status: 400 }
+      )
+    }
+
+    const updateData: {
+      status?: string
+      deliveryContactPhone?: string | null
+      estimatedTime?: string | null
+    } = {}
+
+    if (status) updateData.status = status
+    if (deliveryContactPhone !== undefined) {
+      updateData.deliveryContactPhone = deliveryContactPhone ? deliveryContactPhone.trim() : null
+    }
+    if (estimatedTime !== undefined) {
+      updateData.estimatedTime = estimatedTime ? estimatedTime.trim() : null
+    }
+
+    if (Object.keys(updateData).length === 0) {
+      return NextResponse.json(
+        { success: false, error: 'No update fields provided' },
         { status: 400 }
       )
     }
 
     const order = await prisma.order.update({
       where: { id: orderId },
-      data: { status },
+      data: updateData,
       include: {
         items: {
           include: { menuItem: true },
@@ -50,6 +71,8 @@ export async function PATCH(
         payerName: order.payerName,
         duplicateUtrFlag: order.duplicateUtrFlag,
         paymentScreenshot: order.paymentScreenshot,
+        deliveryContactPhone: order.deliveryContactPhone,
+        estimatedTime: order.estimatedTime,
       })
     } else if (status === ORDER_STATUS.REJECTED) {
       await notifyAdmin('order_rejected', {

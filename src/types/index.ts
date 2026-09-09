@@ -24,6 +24,8 @@ export type Order = {
   payerName?: string | null
   paymentScreenshot?: string | null
   duplicateUtrFlag?: boolean
+  deliveryContactPhone?: string | null
+  estimatedTime?: string | null
   status: string
   createdAt: string
   items: OrderItem[]

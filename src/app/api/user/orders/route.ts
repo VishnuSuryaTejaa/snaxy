@@ -83,6 +83,8 @@ export async function GET(request: Request) {
       paymentMethod: order.paymentMethod,
       status: order.status,
       upiUtr: order.upiUtr,
+      deliveryContactPhone: order.deliveryContactPhone,
+      estimatedTime: order.estimatedTime,
       createdAt: order.createdAt.toISOString(),
       updatedAt: order.updatedAt.toISOString(),
       items: order.items.map((i) => ({

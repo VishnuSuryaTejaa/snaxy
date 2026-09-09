@@ -16,6 +16,8 @@ export interface TelegramOrderDetails {
   payerName?: string | null
   duplicateUtrFlag?: boolean
   paymentScreenshot?: string | null
+  deliveryContactPhone?: string | null
+  estimatedTime?: string | null
 }
 
 export type NotificationEventType =
@@ -74,6 +76,12 @@ export async function sendTelegramNotification(
   text += `\n`
   text += `🍽️ *Items:* ${escapeMarkdown(itemsText)}\n`
 
+  if (order.estimatedTime) {
+    text += `⏱️ *ETA:* ${escapeMarkdown(order.estimatedTime)}\n`
+  }
+  if (order.deliveryContactPhone) {
+    text += `📞 *Runner Phone:* ${escapeMarkdown(order.deliveryContactPhone)}\n`
+  }
   if (order.upiUtr) {
     text += `🔢 *UTR:* \`${order.upiUtr}\`\n`
   }

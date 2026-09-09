@@ -33,10 +33,12 @@ model Order {
   totalAmount       Float
   paymentMethod     String   // "upi" or "cash"
   upiUtr            String?
-  payerName         String?  // Payer name entered by user
-  paymentScreenshot String?  // Base64 compressed image
-  duplicateUtrFlag  Boolean  @default(false) // Flagged if same UTR submitted on another order
-  status            String   @default("awaiting_payment") // awaiting_payment, payment_submitted, verified, rejected, preparing, ready, completed, cancelled
+  payerName            String?  // Payer name entered by user
+  paymentScreenshot    String?  // Base64 compressed image
+  duplicateUtrFlag     Boolean  @default(false) // Flagged if same UTR submitted on another order
+  deliveryContactPhone String?  // Custom runner/contact phone set by admin (e.g. "9876543210")
+  estimatedTime        String?  // Custom delivery ETA set by admin (e.g. "15-20 mins" or "10:30 PM")
+  status               String   @default("awaiting_payment") // awaiting_payment, payment_submitted, verified, rejected, preparing, ready, completed, cancelled
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
   userId            String?  @db.ObjectId

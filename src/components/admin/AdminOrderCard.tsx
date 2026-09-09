@@ -1,8 +1,22 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Order } from '@/types'
-import { CheckCircle2, ChefHat, Bell, XCircle, AlertTriangle, Copy, Check, Eye, X } from 'lucide-react'
+import {
+  CheckCircle2,
+  ChefHat,
+  Bell,
+  XCircle,
+  AlertTriangle,
+  Copy,
+  Check,
+  Eye,
+  X,
+  Clock,
+  Phone,
+  Save,
+  Sparkles,
+} from 'lucide-react'
 import { ORDER_STATUS } from '@/lib/constants'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Image from 'next/image'
@@ -18,6 +32,8 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; border: stri
   [ORDER_STATUS.CANCELLED]: { label: 'Cancelled', color: 'bg-status-cancelled/15 text-status-cancelled-fg', border: 'border-l-status-cancelled', dot: 'bg-status-cancelled' },
 }
 
+const ETA_PRESETS = ['10 mins', '15 mins', '20 mins', '30 mins', '45 mins']
+
 export function AdminOrderCard({
   order,
   idx,
@@ -25,11 +41,26 @@ export function AdminOrderCard({
 }: {
   order: Order
   idx: number
-  updateOrderStatus: (orderId: string, status: string) => void
+  updateOrderStatus: (
+    orderId: string,
+    status?: string,
+    extra?: { deliveryContactPhone?: string | null; estimatedTime?: string | null }
+  ) => Promise<boolean> | void
 }) {
   const c = STATUS_CONFIG[order.status] ?? STATUS_CONFIG[ORDER_STATUS.PAYMENT_SUBMITTED]
   const [copiedUtr, setCopiedUtr] = useState(false)
   const [showScreenshotModal, setShowScreenshotModal] = useState(false)
+
+  // Local state for custom delivery phone and ETA
+  const [estimatedTime, setEstimatedTime] = useState(order.estimatedTime || '')
+  const [deliveryContactPhone, setDeliveryContactPhone] = useState(order.deliveryContactPhone || '')
+  const [isSavingDetails, setIsSavingDetails] = useState(false)
+  const [savedSuccess, setSavedSuccess] = useState(false)
+
+  useEffect(() => {
+    setEstimatedTime(order.estimatedTime || '')
+    setDeliveryContactPhone(order.deliveryContactPhone || '')
+  }, [order.estimatedTime, order.deliveryContactPhone])
 
   const shortId = order.shortCode || `#${order.id.slice(-6).toUpperCase()}`
 
@@ -38,6 +69,23 @@ export function AdminOrderCard({
     await navigator.clipboard.writeText(order.upiUtr)
     setCopiedUtr(true)
     setTimeout(() => setCopiedUtr(false), 2000)
+  }
+
+  const handleSaveDetails = async (e?: React.FormEvent) => {
+    if (e) e.preventDefault()
+    setIsSavingDetails(true)
+    try {
+      const ok = await updateOrderStatus(order.id, undefined, {
+        deliveryContactPhone: deliveryContactPhone.trim() || null,
+        estimatedTime: estimatedTime.trim() || null,
+      })
+      if (ok !== false) {
+        setSavedSuccess(true)
+        setTimeout(() => setSavedSuccess(false), 2500)
+      }
+    } finally {
+      setIsSavingDetails(false)
+    }
   }
 
   return (
@@ -66,6 +114,18 @@ export function AdminOrderCard({
               ) : (
                 <span className="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-400 border border-blue-500/20">
                   📱 UPI QR Pay
+                </span>
+              )}
+              {order.estimatedTime && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-extrabold rounded-full px-2.5 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30">
+                  <Clock className="w-3 h-3 text-amber-400" />
+                  {order.estimatedTime}
+                </span>
+              )}
+              {order.deliveryContactPhone && (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5 bg-purple-500/15 text-purple-300 border border-purple-500/20">
+                  <Phone className="w-3 h-3 text-purple-400" />
+                  {order.deliveryContactPhone}
                 </span>
               )}
             </div>
@@ -154,6 +214,83 @@ export function AdminOrderCard({
               </button>
             )}
           </div>
+
+          {/* Custom Delivery Phone & ETA Configuration for this Order */}
+          <div className="mt-3 pt-3 border-t border-white/[0.06] bg-black/20 p-3 rounded-xl border border-white/[0.04] space-y-2.5">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-black tracking-wide text-slate-300 uppercase flex items-center gap-1.5 font-display">
+                <Sparkles className="w-3 h-3 text-primary" />
+                <span>Order ETA &amp; Runner Contact</span>
+              </span>
+              <button
+                type="button"
+                onClick={handleSaveDetails}
+                disabled={isSavingDetails}
+                className="text-[10px] font-bold px-2 py-0.5 rounded-lg bg-primary/20 hover:bg-primary/30 border border-primary/40 text-orange-300 transition-all active:scale-95 flex items-center gap-1"
+              >
+                {savedSuccess ? (
+                  <>
+                    <Check className="w-3 h-3 text-emerald-400" />
+                    <span className="text-emerald-400 font-extrabold">Saved ✓</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-3 h-3" />
+                    <span>Save Info</span>
+                  </>
+                )}
+              </button>
+            </div>
+
+            {/* Estimated Prep/Delivery Time */}
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-[10px] text-muted-foreground font-bold flex items-center gap-1">
+                  <Clock className="w-3 h-3 text-amber-400" />
+                  <span>Estimated Time (ETA)</span>
+                </label>
+              </div>
+              {/* Quick Presets */}
+              <div className="flex flex-wrap gap-1 mb-1.5">
+                {ETA_PRESETS.map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setEstimatedTime(preset)}
+                    className={`text-[9px] font-bold px-2 py-0.5 rounded-md border transition-all ${
+                      estimatedTime === preset
+                        ? 'bg-primary text-white border-primary shadow-sm'
+                        : 'bg-white/[0.05] hover:bg-white/[0.1] text-slate-400 hover:text-white border-white/10'
+                    }`}
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="text"
+                value={estimatedTime}
+                onChange={(e) => setEstimatedTime(e.target.value)}
+                placeholder="e.g. 15 mins or 10:30 PM"
+                className="w-full text-xs bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-primary/60 font-sans"
+              />
+            </div>
+
+            {/* Delivery Runner / Kitchen Contact Mobile */}
+            <div>
+              <label className="text-[10px] text-muted-foreground font-bold flex items-center gap-1 mb-1">
+                <Phone className="w-3 h-3 text-purple-400" />
+                <span>Runner / Kitchen Phone</span>
+              </label>
+              <input
+                type="tel"
+                value={deliveryContactPhone}
+                onChange={(e) => setDeliveryContactPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
+                placeholder="e.g. 9876543210"
+                className="w-full text-xs font-mono bg-black/40 border border-white/10 rounded-lg px-2.5 py-1.5 text-white placeholder-slate-500 focus:outline-none focus:border-primary/60"
+              />
+            </div>
+          </div>
         </div>
 
         {/* Action Buttons */}
@@ -161,7 +298,12 @@ export function AdminOrderCard({
           {order.status === ORDER_STATUS.PAYMENT_SUBMITTED && (
             <div className="flex gap-2">
               <button
-                onClick={() => updateOrderStatus(order.id, ORDER_STATUS.VERIFIED)}
+                onClick={() =>
+                  updateOrderStatus(order.id, ORDER_STATUS.VERIFIED, {
+                    deliveryContactPhone: deliveryContactPhone.trim() || null,
+                    estimatedTime: estimatedTime.trim() || null,
+                  })
+                }
                 className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs font-bold py-2.5 transition-all active:scale-95 shadow-sm"
               >
                 <CheckCircle2 className="w-4 h-4" /> Verify Payment
@@ -178,7 +320,12 @@ export function AdminOrderCard({
 
           {order.status === ORDER_STATUS.VERIFIED && (
             <button
-              onClick={() => updateOrderStatus(order.id, ORDER_STATUS.PREPARING)}
+              onClick={() =>
+                updateOrderStatus(order.id, ORDER_STATUS.PREPARING, {
+                  deliveryContactPhone: deliveryContactPhone.trim() || null,
+                  estimatedTime: estimatedTime.trim() || null,
+                })
+              }
               className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-primary/15 border border-primary/25 text-primary hover:bg-primary hover:text-primary-foreground text-xs font-bold py-2.5 transition-all active:scale-95"
             >
               <ChefHat className="w-4 h-4" /> Start Preparing
@@ -187,7 +334,12 @@ export function AdminOrderCard({
 
           {order.status === ORDER_STATUS.PREPARING && (
             <button
-              onClick={() => updateOrderStatus(order.id, ORDER_STATUS.READY)}
+              onClick={() =>
+                updateOrderStatus(order.id, ORDER_STATUS.READY, {
+                  deliveryContactPhone: deliveryContactPhone.trim() || null,
+                  estimatedTime: estimatedTime.trim() || null,
+                })
+              }
               className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs font-bold py-2.5 transition-all active:scale-95"
             >
               <Bell className="w-4 h-4 animate-bounce" /> Mark Ready for Pickup / Delivery
@@ -196,7 +348,12 @@ export function AdminOrderCard({
 
           {order.status === ORDER_STATUS.READY && (
             <button
-              onClick={() => updateOrderStatus(order.id, ORDER_STATUS.COMPLETED)}
+              onClick={() =>
+                updateOrderStatus(order.id, ORDER_STATUS.COMPLETED, {
+                  deliveryContactPhone: deliveryContactPhone.trim() || null,
+                  estimatedTime: estimatedTime.trim() || null,
+                })
+              }
               className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-primary/15 border border-primary/25 text-primary hover:bg-primary hover:text-primary-foreground text-xs font-bold py-2.5 transition-all active:scale-95"
             >
               <CheckCircle2 className="h-3.5 w-3.5" /> Complete Order
@@ -207,7 +364,11 @@ export function AdminOrderCard({
           <Select
             value={order.status}
             onValueChange={(val) => {
-              if (val) updateOrderStatus(order.id, val)
+              if (val)
+                updateOrderStatus(order.id, val, {
+                  deliveryContactPhone: deliveryContactPhone.trim() || null,
+                  estimatedTime: estimatedTime.trim() || null,
+                })
             }}
           >
             <SelectTrigger className="h-8 text-xs rounded-xl border-white/10 bg-muted/30">

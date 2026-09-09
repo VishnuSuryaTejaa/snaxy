@@ -44,22 +44,39 @@ export default function AdminDashboard() {
     return () => clearInterval(interval)
   }, [fetchAll])
 
-  const updateOrderStatus = async (orderId: string, newStatus: string) => {
+  const updateOrderStatus = async (
+    orderId: string,
+    newStatus?: string,
+    extra?: { deliveryContactPhone?: string | null; estimatedTime?: string | null }
+  ) => {
     try {
+      const payload: {
+        status?: string
+        deliveryContactPhone?: string | null
+        estimatedTime?: string | null
+      } = {}
+      if (newStatus) payload.status = newStatus
+      if (extra?.deliveryContactPhone !== undefined) payload.deliveryContactPhone = extra.deliveryContactPhone
+      if (extra?.estimatedTime !== undefined) payload.estimatedTime = extra.estimatedTime
+
       const res = await fetch(`/api/admin/orders/${orderId}/status`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status: newStatus }),
+        body: JSON.stringify(payload),
       })
       if (res.ok) {
+        const data = await res.json()
         setOrders((prev) =>
-          prev.map((o) => (o.id === orderId ? { ...o, status: newStatus } : o))
+          prev.map((o) => (o.id === orderId ? { ...o, ...data.order } : o))
         )
         // Also refresh stats
-        fetch('/api/admin/stats').then(r => r.json()).then(d => setStats(d.stats))
+        fetch('/api/admin/stats').then((r) => r.json()).then((d) => setStats(d.stats))
+        return true
       }
+      return false
     } catch (err) {
       console.error('Update failed:', err)
+      return false
     }
   }
 

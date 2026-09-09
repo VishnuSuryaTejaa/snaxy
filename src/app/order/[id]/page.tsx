@@ -32,6 +32,8 @@ export default async function OrderTrackingPage({ params }: { params: Promise<{ 
     paymentMethod: order.paymentMethod,
     status: order.status,
     upiUtr: order.upiUtr,
+    deliveryContactPhone: order.deliveryContactPhone,
+    estimatedTime: order.estimatedTime,
     createdAt: order.createdAt.toISOString(),
     items: order.items.map((i) => ({
       id: i.id,
