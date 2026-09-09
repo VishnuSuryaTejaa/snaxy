@@ -474,7 +474,18 @@ export function MyOrdersClient() {
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {/* Payment method tag */}
+                      {order.paymentMethod === 'cash' || order.upiUtr === 'CASH ON DELIVERY' ? (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-extrabold rounded-full px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          💵 Cash on Delivery
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-400 border border-blue-500/20">
+                          📱 UPI Pay
+                        </span>
+                      )}
+
                       {/* Status pill */}
                       <span
                         className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border ${badge.color}`}

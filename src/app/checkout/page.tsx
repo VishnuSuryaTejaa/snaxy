@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { QRCodeSVG } from 'qrcode.react'
 import { useIsMounted } from '@/hooks/use-is-mounted'
-import { Copy, Check, ArrowLeft, Loader2, UploadCloud, Smartphone, ShieldCheck, X, Sparkles } from 'lucide-react'
+import { Copy, Check, ArrowLeft, Loader2, UploadCloud, Smartphone, ShieldCheck, X, Sparkles, Banknote } from 'lucide-react'
 import { toast } from 'sonner'
 import Image from 'next/image'
 
@@ -203,6 +203,29 @@ function CheckoutContent() {
     } catch (error) {
       console.error('Payment submission error:', error)
       toast.error('An error occurred. Please try again.')
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleSwitchToCod = async () => {
+    if (!orderId) return
+    setIsSubmitting(true)
+    try {
+      const res = await fetch(`/api/orders/${orderId}/payment`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ switchToCod: true }),
+      })
+      const data = await res.json()
+      if (res.ok && data.success) {
+        toast.success('Switched to Cash on Delivery! Kitchen is preparing your bites.')
+        router.push(`/order/${orderId}`)
+      } else {
+        toast.error(data.error || 'Failed to switch payment method')
+      }
+    } catch {
+      toast.error('Network error. Please try again.')
+    } finally {
       setIsSubmitting(false)
     }
   }
@@ -454,6 +477,27 @@ function CheckoutContent() {
               )}
             </Button>
           </form>
+
+          {/* Switch to Cash on Delivery Option */}
+          <div className="px-6 py-4 border-t border-white/[0.08] bg-white/[0.02] flex items-center justify-between gap-3">
+            <div className="flex items-center gap-2.5">
+              <div className="w-8 h-8 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                <Banknote className="h-4 w-4" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-200">Prefer to pay cash?</p>
+                <p className="text-[10px] text-slate-400">Pay runner upon food arrival</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={handleSwitchToCod}
+              disabled={isSubmitting}
+              className="px-3 py-1.5 rounded-xl bg-emerald-500/20 hover:bg-emerald-500/30 border border-emerald-500/40 text-emerald-300 text-xs font-bold transition-all active:scale-95 shadow-sm"
+            >
+              Pay with COD
+            </button>
+          </div>
         </div>
 
         {/* Back Link */}

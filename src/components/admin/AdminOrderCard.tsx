@@ -59,6 +59,15 @@ export function AdminOrderCard({
                 <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
                 {c.label}
               </span>
+              {order.paymentMethod === 'cash' ? (
+                <span className="inline-flex items-center gap-1 text-[11px] font-extrabold rounded-full px-2.5 py-0.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                  💵 CASH ON DELIVERY
+                </span>
+              ) : (
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-400 border border-blue-500/20">
+                  📱 UPI QR Pay
+                </span>
+              )}
             </div>
             <p className="font-bold text-base leading-tight">{order.customerName}</p>
             <p className="text-xs text-muted-foreground mt-0.5">
@@ -98,7 +107,18 @@ export function AdminOrderCard({
 
           {/* Payment Details Section */}
           <div className="mt-3 pt-3 border-t border-white/[0.05] space-y-2">
-            {order.upiUtr ? (
+            {order.paymentMethod === 'cash' ? (
+              <div className="bg-emerald-500/15 border border-emerald-500/30 px-3 py-2 rounded-xl flex items-center justify-between">
+                <div>
+                  <p className="text-[10px] text-emerald-400/80 uppercase font-bold tracking-wider">Payment Mode</p>
+                  <p className="text-xs font-black text-emerald-300">CASH ON DELIVERY</p>
+                </div>
+                <div className="text-right">
+                  <p className="text-[10px] text-emerald-400/80 uppercase font-bold tracking-wider">Collect</p>
+                  <p className="text-sm font-black text-emerald-400">₹{order.totalAmount.toFixed(0)}</p>
+                </div>
+              </div>
+            ) : order.upiUtr ? (
               <div className="flex items-center justify-between bg-muted/30 px-2.5 py-1.5 rounded-xl border border-white/[0.05]">
                 <div>
                   <p className="text-[9px] text-muted-foreground uppercase font-bold tracking-wider">UPI UTR Ref</p>

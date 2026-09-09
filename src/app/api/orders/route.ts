@@ -122,8 +122,9 @@ export async function POST(request: Request) {
     const userId = isValidObjectId ? rawUserId : null
 
     const shortCode = generateShortCode()
-    const isCash = paymentMethod === 'cash'
-    const initialStatus = isCash ? ORDER_STATUS.PAYMENT_SUBMITTED : ORDER_STATUS.AWAITING_PAYMENT
+    const cleanPaymentMethod = paymentMethod === 'cash' || paymentMethod === 'cod' ? 'cash' : 'upi'
+    const isCash = cleanPaymentMethod === 'cash'
+    const initialStatus = isCash ? ORDER_STATUS.PREPARING : ORDER_STATUS.AWAITING_PAYMENT
 
     // Create the order and its items
     const order = await prisma.order.create({
@@ -135,7 +136,7 @@ export async function POST(request: Request) {
         deliveryAddress: sanitizeHtml(address) || null,
         orderNotes: sanitizeHtml(notes) || null,
         totalAmount: calculatedTotal,
-        paymentMethod,
+        paymentMethod: cleanPaymentMethod,
         status: initialStatus,
         userId: userId || null,
         items: {
@@ -160,7 +161,7 @@ export async function POST(request: Request) {
         deliveryType: order.deliveryType,
         deliveryAddress: order.deliveryAddress,
         items: order.items,
-        upiUtr: order.upiUtr,
+        upiUtr: 'CASH ON DELIVERY',
       })
     }
 

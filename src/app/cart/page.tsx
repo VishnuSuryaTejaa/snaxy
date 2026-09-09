@@ -4,7 +4,7 @@ import { useCartStore } from '@/lib/store'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Minus, Trash2, ShoppingBag, ArrowRight, MapPin, Package, Loader2, Sparkles, ShieldCheck } from 'lucide-react'
+import { Plus, Minus, Trash2, ShoppingBag, ArrowRight, MapPin, Package, Loader2, Sparkles, ShieldCheck, QrCode, Banknote, CheckCircle2 } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
@@ -17,6 +17,7 @@ export default function CartPage() {
   const mounted = useIsMounted()
   const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [paymentMethod, setPaymentMethod] = useState<'upi' | 'cash'>('upi')
 
   const [formData, setFormData] = useState({
     name: '',
@@ -82,7 +83,11 @@ export default function CartPage() {
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault()
     if (!formData.name.trim()) {
-      toast.error('Please enter your Name as shown on your UPI / Bank Account')
+      toast.error(
+        paymentMethod === 'upi'
+          ? 'Please enter your Name as shown on your UPI / Bank Account'
+          : 'Please enter your Full Name'
+      )
       return
     }
     if (!formData.phone.trim() || formData.phone.length !== 10) {
@@ -102,7 +107,7 @@ export default function CartPage() {
         body: JSON.stringify({
           ...formData,
           deliveryType: 'delivery',
-          paymentMethod: 'upi',
+          paymentMethod,
           items: items.map((i) => ({
             id: i.menuItemId || i.id,
             menuItemId: i.menuItemId || i.id,
@@ -138,12 +143,19 @@ export default function CartPage() {
           customerName: formData.name,
           customerPhone: formData.phone,
           deliveryType: 'delivery',
+          paymentMethod,
           items,
         })
       )
 
       clearCart()
-      router.push(`/checkout?order=${data.orderId}`)
+
+      if (paymentMethod === 'cash') {
+        toast.success('🎉 Cash on Delivery order placed! Kitchen is preparing your bites.')
+        router.push(`/order/${data.orderId}`)
+      } else {
+        router.push(`/checkout?order=${data.orderId}`)
+      }
     } catch (err) {
       console.error('Checkout initialization error:', err)
       toast.error('Network error. Please try again.')
@@ -273,24 +285,91 @@ export default function CartPage() {
         </div>
 
         {/* ── Right: Delivery & Checkout Form ───────────────── */}
-        <div className="w-full lg:w-[400px]">
+        <div className="w-full lg:w-[420px]">
           <div className="sticky top-28 rounded-3xl bg-slate-950/80 backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
             <div className="px-6 py-5 border-b border-white/[0.08] bg-white/[0.02]">
               <h2 className="text-lg font-black tracking-tight text-white font-display">
                 Customer &amp; Spot Details
               </h2>
-              <p className="text-xs text-slate-400 mt-0.5 font-sans">We will notify you once food is ready</p>
+              <p className="text-xs text-slate-400 mt-0.5 font-sans">Freshly prepared &amp; delivered across campus</p>
             </div>
 
             <form id="checkout-form" onSubmit={handleCheckout} className="px-6 py-5 flex flex-col gap-4 font-sans">
+              {/* Payment Method Selector */}
+              <div className="space-y-2">
+                <Label className="text-xs font-black text-slate-200 uppercase tracking-wider block">
+                  Select Payment Method <span className="text-primary">*</span>
+                </Label>
+                <div className="grid grid-cols-2 gap-2.5">
+                  {/* UPI Option */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('upi')}
+                    className={`relative p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between gap-1.5 ${
+                      paymentMethod === 'upi'
+                        ? 'bg-primary/15 border-primary ring-1 ring-primary/40 shadow-[0_0_15px_rgba(255,85,0,0.25)]'
+                        : 'bg-black/40 border-white/[0.08] hover:border-white/20 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="w-7 h-7 rounded-xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary">
+                        <QrCode className="h-4 w-4" />
+                      </div>
+                      {paymentMethod === 'upi' && (
+                        <CheckCircle2 className="h-4 w-4 text-primary" />
+                      )}
+                    </div>
+                    <div>
+                      <span className={`text-xs font-black block ${paymentMethod === 'upi' ? 'text-white' : 'text-slate-300'}`}>
+                        UPI QR Pay
+                      </span>
+                      <span className="text-[10px] text-slate-400 leading-none">
+                        GPay / PhonePe / Paytm
+                      </span>
+                    </div>
+                  </button>
+
+                  {/* Cash on Delivery Option */}
+                  <button
+                    type="button"
+                    onClick={() => setPaymentMethod('cash')}
+                    className={`relative p-3 rounded-2xl border text-left transition-all duration-200 flex flex-col justify-between gap-1.5 ${
+                      paymentMethod === 'cash'
+                        ? 'bg-emerald-500/15 border-emerald-500 ring-1 ring-emerald-500/40 shadow-[0_0_15px_rgba(16,185,129,0.25)]'
+                        : 'bg-black/40 border-white/[0.08] hover:border-white/20 text-slate-400 hover:text-slate-200'
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="w-7 h-7 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center text-emerald-400">
+                        <Banknote className="h-4 w-4" />
+                      </div>
+                      {paymentMethod === 'cash' && (
+                        <CheckCircle2 className="h-4 w-4 text-emerald-400" />
+                      )}
+                    </div>
+                    <div>
+                      <span className={`text-xs font-black block ${paymentMethod === 'cash' ? 'text-emerald-300' : 'text-slate-300'}`}>
+                        Cash on Delivery
+                      </span>
+                      <span className="text-[10px] text-slate-400 leading-none">
+                        Pay upon arrival
+                      </span>
+                    </div>
+                  </button>
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <Label htmlFor="name" className="text-xs font-black text-slate-200">
-                    Name (as in UPI / Bank Account) <span className="text-primary">*</span>
+                    {paymentMethod === 'upi' ? 'Name (as in UPI / Bank Account)' : 'Full Name'}{' '}
+                    <span className="text-primary">*</span>
                   </Label>
-                  <span className="text-[10px] font-bold text-orange-400 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
-                    Mandatory for Verification
-                  </span>
+                  {paymentMethod === 'upi' && (
+                    <span className="text-[10px] font-bold text-orange-400 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                      Mandatory for UPI
+                    </span>
+                  )}
                 </div>
                 <Input
                   id="name"
@@ -301,7 +380,9 @@ export default function CartPage() {
                   className="rounded-2xl bg-black/50 border-white/10 focus:border-primary/60 h-11 text-sm text-white font-medium shadow-inner"
                 />
                 <p className="text-[11px] text-slate-400 leading-tight">
-                  Must match the sender name on your UPI app (GPay / PhonePe / Paytm) so staff can approve your order instantly.
+                  {paymentMethod === 'upi'
+                    ? 'Must match sender name on your UPI app (GPay / PhonePe) so staff approves your order instantly.'
+                    : 'Recipient name for order handover upon delivery.'}
                 </p>
               </div>
 
@@ -365,16 +446,25 @@ export default function CartPage() {
                 type="submit"
                 form="checkout-form"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 rounded-2xl h-12 bg-gradient-to-r from-primary via-orange-500 to-rose-500 text-white font-black text-sm hover:scale-[1.02] transition-all active:scale-[0.98] shadow-[0_0_25px_rgba(255,94,14,0.4)] disabled:opacity-60 border border-white/20 font-display"
+                className={`w-full flex items-center justify-center gap-2 rounded-2xl h-12 text-white font-black text-sm hover:scale-[1.02] transition-all active:scale-[0.98] disabled:opacity-60 border font-display ${
+                  paymentMethod === 'cash'
+                    ? 'bg-gradient-to-r from-emerald-600 via-teal-600 to-emerald-700 shadow-[0_0_25px_rgba(16,185,129,0.4)] border-emerald-400/30'
+                    : 'bg-gradient-to-r from-primary via-orange-500 to-rose-500 shadow-[0_0_25px_rgba(255,94,14,0.4)] border-white/20'
+                }`}
               >
                 {isSubmitting ? (
                   <>
                     <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Preparing Payment...</span>
+                    <span>Placing Order...</span>
+                  </>
+                ) : paymentMethod === 'cash' ? (
+                  <>
+                    <Banknote className="h-4 w-4" />
+                    <span>Place Cash on Delivery Order (₹{getCartTotal().toFixed(0)})</span>
                   </>
                 ) : (
                   <>
-                    <span>Proceed to Pay ₹{getCartTotal().toFixed(0)}</span>
+                    <span>Proceed to UPI Pay ₹{getCartTotal().toFixed(0)}</span>
                     <ArrowRight className="h-4 w-4" />
                   </>
                 )}

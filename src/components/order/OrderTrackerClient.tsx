@@ -29,7 +29,7 @@ interface StatusStep {
   color: string
 }
 
-const STATUS_STEPS: StatusStep[] = [
+const UPI_STATUS_STEPS: StatusStep[] = [
   {
     key: [ORDER_STATUS.AWAITING_PAYMENT, ORDER_STATUS.PAYMENT_SUBMITTED],
     label: 'Payment Submitted',
@@ -64,11 +64,38 @@ const STATUS_STEPS: StatusStep[] = [
   },
 ]
 
+const COD_STATUS_STEPS: StatusStep[] = [
+  {
+    key: [ORDER_STATUS.AWAITING_PAYMENT, ORDER_STATUS.PAYMENT_SUBMITTED, ORDER_STATUS.VERIFIED],
+    label: 'Order Confirmed (COD)',
+    sublabel: 'Cash on Delivery confirmed — pay upon arrival',
+    icon: CheckCircle2,
+    emoji: '💵',
+    color: 'text-emerald-400',
+  },
+  {
+    key: [ORDER_STATUS.PREPARING],
+    label: 'Cooking on Grill',
+    sublabel: 'Fresh ingredients being cooked hot & fresh',
+    icon: ChefHat,
+    emoji: '👨‍🍳',
+    color: 'text-orange-400',
+  },
+  {
+    key: [ORDER_STATUS.READY, ORDER_STATUS.COMPLETED],
+    label: 'Ready for Collection / Delivery!',
+    sublabel: 'Keep exact cash ready for handoff',
+    icon: Bell,
+    emoji: '🔔',
+    color: 'text-emerald-400',
+  },
+]
+
 const TERMINAL_BAD: OrderStatusType[] = [ORDER_STATUS.REJECTED, ORDER_STATUS.CANCELLED]
 const TERMINAL_DONE: OrderStatusType[] = [ORDER_STATUS.READY, ORDER_STATUS.COMPLETED]
 
-function getStepIndex(status: string): number {
-  return STATUS_STEPS.findIndex((s) => s.key.includes(status as OrderStatusType))
+function getStepIndex(status: string, steps: StatusStep[]): number {
+  return steps.findIndex((s) => s.key.includes(status as OrderStatusType))
 }
 
 function playCelebrationChime() {
@@ -135,7 +162,9 @@ export function OrderTrackerClient({ initialOrder }: OrderTrackerClientProps) {
 
   const isCancelled = TERMINAL_BAD.includes(order.status as OrderStatusType)
   const isReady = TERMINAL_DONE.includes(order.status as OrderStatusType)
-  const activeStep = getStepIndex(order.status)
+  const isCod = order.paymentMethod === 'cash' || order.upiUtr === 'CASH ON DELIVERY'
+  const steps = isCod ? COD_STATUS_STEPS : UPI_STATUS_STEPS
+  const activeStep = getStepIndex(order.status, steps)
 
   const fetchLiveStatus = useCallback(async (manual = false) => {
     if (manual) setIsRefreshing(true)
@@ -241,7 +270,7 @@ export function OrderTrackerClient({ initialOrder }: OrderTrackerClientProps) {
             </div>
 
             <div className="flex flex-col font-sans">
-              {STATUS_STEPS.map((step, i) => {
+              {steps.map((step, i) => {
                 const Icon = step.icon
                 const done = i < activeStep
                 const active = i === activeStep
@@ -267,7 +296,7 @@ export function OrderTrackerClient({ initialOrder }: OrderTrackerClientProps) {
                         )}
                       </div>
 
-                      {i < STATUS_STEPS.length - 1 && (
+                      {i < steps.length - 1 && (
                         <div
                           className={`w-1 h-12 rounded-full my-1 transition-all duration-700 ${
                             done ? 'bg-gradient-to-b from-primary to-rose-500 shadow-sm' : 'bg-white/10'
@@ -393,7 +422,20 @@ export function OrderTrackerClient({ initialOrder }: OrderTrackerClientProps) {
               </>
             )}
 
-            {order.upiUtr && (
+            <span className="text-slate-400 font-bold">Payment</span>
+            <span className="font-bold text-white flex items-center gap-1.5">
+              {isCod ? (
+                <span className="text-emerald-400 font-extrabold flex items-center gap-1">
+                  💵 Cash on Delivery (Pay ₹{order.totalAmount.toFixed(0)})
+                </span>
+              ) : (
+                <span className="text-blue-400 font-bold flex items-center gap-1">
+                  📱 UPI Online Payment
+                </span>
+              )}
+            </span>
+
+            {order.upiUtr && !isCod && (
               <>
                 <span className="text-slate-400 font-bold">UPI UTR</span>
                 <span className="font-mono text-xs bg-black/50 border border-white/10 text-orange-300 rounded-lg px-2.5 py-1 w-fit font-bold">

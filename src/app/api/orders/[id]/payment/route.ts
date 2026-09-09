@@ -16,27 +16,7 @@ export async function PATCH(
   try {
     const { id } = await params
     const body = await request.json()
-    const { utr, payerName, screenshot } = body
-
-    if (!utr) {
-      return NextResponse.json(
-        { success: false, error: '12-digit UPI UTR / Transaction Reference is required' },
-        { status: 400 }
-      )
-    }
-
-    const cleanUtr = utr.trim()
-
-    // Validate 12-digit format
-    if (!/^\d{12}$/.test(cleanUtr)) {
-      return NextResponse.json(
-        {
-          success: false,
-          error: 'Invalid UTR format. UPI UTR must be exactly 12 numeric digits.',
-        },
-        { status: 400 }
-      )
-    }
+    const { utr, payerName, screenshot, switchToCod } = body
 
     const existingOrder = await prisma.order.findUnique({
       where: { id },
@@ -53,6 +33,54 @@ export async function PATCH(
         { status: 404 }
       )
     }
+
+    // Handle Switch to Cash on Delivery (COD)
+    if (switchToCod) {
+      const updatedOrder = await prisma.order.update({
+        where: { id },
+        data: {
+          paymentMethod: 'cash',
+          status: ORDER_STATUS.PREPARING,
+          upiUtr: 'CASH ON DELIVERY',
+        },
+        include: {
+          items: {
+            include: { menuItem: true },
+          },
+        },
+      })
+
+      await notifyAdmin('order_placed', {
+        id: updatedOrder.id,
+        shortCode: updatedOrder.shortCode,
+        totalAmount: updatedOrder.totalAmount,
+        customerName: updatedOrder.customerName,
+        customerPhone: updatedOrder.customerPhone,
+        deliveryType: updatedOrder.deliveryType,
+        deliveryAddress: updatedOrder.deliveryAddress,
+        items: updatedOrder.items,
+        upiUtr: 'CASH ON DELIVERY',
+      })
+
+      return NextResponse.json({
+        success: true,
+        order: {
+          id: updatedOrder.id,
+          shortCode: updatedOrder.shortCode,
+          status: updatedOrder.status,
+          paymentMethod: 'cash',
+        },
+      })
+    }
+
+    if (!utr) {
+      return NextResponse.json(
+        { success: false, error: '12-digit UPI UTR / Transaction Reference is required' },
+        { status: 400 }
+      )
+    }
+
+    const cleanUtr = utr.trim()
 
     // Check for duplicate UTR across other orders (fraud prevention check)
     const duplicateUtrOrder = await prisma.order.findFirst({
