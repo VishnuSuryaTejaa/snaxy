@@ -1,6 +1,6 @@
 'use client'
 
-import { ExternalLink, Sparkles, Shield } from 'lucide-react'
+import { ExternalLink, Sparkles, Shield, Clock } from 'lucide-react'
 import Link from 'next/link'
 
 function LinkedInIcon({ className = "w-3.5 h-3.5" }: { className?: string }) {
@@ -35,6 +35,13 @@ export function Footer() {
             Instant Campus Bites
           </span>
           <span className="text-white/20 text-xs hidden sm:inline">•</span>
+          <Link
+            href="/orders"
+            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 border border-white/[0.06] text-xs font-semibold transition"
+          >
+            <Clock className="w-3 h-3 text-primary" />
+            <span>My Orders</span>
+          </Link>
           <Link
             href="/admin"
             className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-xl bg-white/[0.04] hover:bg-white/[0.08] text-slate-400 hover:text-slate-200 border border-white/[0.06] text-xs font-semibold transition"

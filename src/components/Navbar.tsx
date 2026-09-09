@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { ShoppingCart, ArrowRight, User, LogOut, Shield } from 'lucide-react'
+import { ShoppingCart, ArrowRight, User, LogOut, Shield, Clock } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
 import { useIsMounted } from '@/hooks/use-is-mounted'
 import { useState, useEffect, useRef } from 'react'
@@ -88,6 +88,20 @@ export function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
 
           {/* Navigation Controls */}
           <nav className="flex items-center gap-1.5 sm:gap-3">
+            {/* My Orders / Live Kitchen Tracking */}
+            <Link
+              href="/orders"
+              className={`flex items-center gap-1.5 px-2.5 sm:px-3.5 py-2 rounded-2xl text-xs font-bold transition-all active:scale-95 ${
+                isActive('/orders')
+                  ? 'bg-primary/20 text-orange-300 border border-primary/40 shadow-[0_0_15px_rgba(255,94,14,0.3)]'
+                  : 'text-slate-300 hover:text-white bg-white/[0.04] sm:bg-transparent hover:bg-white/[0.08] border border-white/[0.08] sm:border-transparent hover:border-white/15'
+              }`}
+              title="Track Active & Past Orders"
+            >
+              <Clock className="w-3.5 h-3.5 text-primary" />
+              <span className="text-[11px] sm:text-xs">My Orders</span>
+            </Link>
+
             {/* Staff / Kitchen Portal Access (Always visible on mobile & desktop) */}
             <Link
               href="/admin"

@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from 'react'
 import { Switch } from '@/components/ui/switch'
-import { Search, RefreshCw, ChevronDown, ChevronUp, CheckCircle2, XCircle, Plus, Loader2, Trash2, Image as ImageIcon } from 'lucide-react'
+import { Search, RefreshCw, ChevronDown, ChevronUp, CheckCircle2, XCircle, Plus, Loader2, Trash2, Pencil, Image as ImageIcon } from 'lucide-react'
 import { toast } from 'sonner'
 import { useDebounce } from '@/hooks/use-debounce'
 import type { MenuItem } from '@prisma/client'
@@ -25,6 +25,18 @@ export default function AdminMenuManagement() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [deletingId, setDeletingId] = useState<string | null>(null)
   const [newItem, setNewItem] = useState({
+    name: '',
+    description: '',
+    price: '',
+    category: 'Snacks',
+    imageUrl: '',
+    isVeg: true,
+  })
+
+  // Edit Item State
+  const [isEditingItem, setIsEditingItem] = useState(false)
+  const [editItem, setEditItem] = useState({
+    id: '',
     name: '',
     description: '',
     price: '',
@@ -161,6 +173,68 @@ export default function AdminMenuManagement() {
     } catch (err) {
       console.error(err)
       toast.error('Network error adding item')
+    } finally {
+      setIsSubmitting(false)
+    }
+  }
+
+  const handleStartEdit = (item: MenuItem) => {
+    setEditItem({
+      id: item.id,
+      name: item.name,
+      description: item.description || '',
+      price: item.price.toString(),
+      category: item.category,
+      imageUrl: item.imageUrl || '',
+      isVeg: item.isVeg,
+    })
+    setIsEditingItem(true)
+  }
+
+  const handleSaveEdit = async (e: React.FormEvent) => {
+    e.preventDefault()
+    if (!editItem.name.trim()) {
+      toast.error('Please enter an item name')
+      return
+    }
+
+    const priceNum = parseFloat(editItem.price)
+    if (isNaN(priceNum) || priceNum <= 0) {
+      toast.error('Please enter a valid price greater than 0')
+      return
+    }
+
+    setIsSubmitting(true)
+
+    try {
+      const res = await fetch('/api/admin/menu', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          itemId: editItem.id,
+          name: editItem.name.trim(),
+          description: editItem.description.trim() || undefined,
+          price: priceNum,
+          category: editItem.category,
+          imageUrl: editItem.imageUrl.trim() || undefined,
+          isVeg: editItem.isVeg,
+        }),
+      })
+
+      const data = await res.json()
+
+      if (res.ok && data.success) {
+        setItems((prev) =>
+          prev.map((i) => (i.id === editItem.id ? { ...i, ...data.item } : i))
+        )
+        toast.success(`${data.item.name} updated successfully!`)
+        setIsEditingItem(false)
+      } else {
+        toast.error(data.error || 'Failed to update item')
+      }
+    } catch (err) {
+      console.error(err)
+      toast.error('Network error updating item')
     } finally {
       setIsSubmitting(false)
     }
@@ -357,6 +431,15 @@ export default function AdminMenuManagement() {
                             onCheckedChange={() => toggleSoldOut(item.id, item.isSoldOut)}
                           />
 
+                          {/* Edit button */}
+                          <button
+                            onClick={() => handleStartEdit(item)}
+                            className="p-1.5 text-muted-foreground hover:text-primary transition-colors rounded-lg hover:bg-white/5"
+                            title="Edit item details"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+
                           {/* Delete button */}
                           <button
                             onClick={() => handleDeleteItem(item.id, item.name)}
@@ -496,6 +579,131 @@ export default function AdminMenuManagement() {
                   </>
                 ) : (
                   'Save Item to Database'
+                )}
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Edit Item Modal */}
+      {isEditingItem && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-background/80 backdrop-blur-sm animate-fade-in">
+          <div className="bg-card border border-white/10 rounded-3xl w-full max-w-md shadow-2xl overflow-hidden animate-scale-pop">
+            <div className="px-6 py-5 border-b border-white/5 flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Pencil className="h-5 w-5 text-primary" />
+                <h2 className="text-xl font-bold tracking-tight">Edit Menu Item</h2>
+              </div>
+              <button
+                onClick={() => setIsEditingItem(false)}
+                className="text-muted-foreground hover:text-foreground p-1 rounded-lg"
+              >
+                <XCircle className="h-6 w-6" />
+              </button>
+            </div>
+
+            <form onSubmit={handleSaveEdit} className="p-6 flex flex-col gap-4">
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+                  Item Name *
+                </label>
+                <input
+                  required
+                  type="text"
+                  value={editItem.name}
+                  onChange={(e) => setEditItem({ ...editItem, name: e.target.value })}
+                  className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+                  placeholder="e.g. Masala Dosa"
+                />
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+                  Description (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={editItem.description}
+                  onChange={(e) => setEditItem({ ...editItem, description: e.target.value })}
+                  className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+                  placeholder="e.g. Crispy golden crepe with potato masala"
+                />
+              </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+                    Price (₹) *
+                  </label>
+                  <input
+                    required
+                    type="number"
+                    min="1"
+                    step="any"
+                    value={editItem.price}
+                    onChange={(e) => setEditItem({ ...editItem, price: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors font-mono"
+                    placeholder="120"
+                  />
+                </div>
+
+                <div>
+                  <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+                    Category *
+                  </label>
+                  <select
+                    value={editItem.category}
+                    onChange={(e) => setEditItem({ ...editItem, category: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+                  >
+                    {Object.keys(CATEGORY_EMOJIS).map((cat) => (
+                      <option key={cat} value={cat} className="bg-card text-foreground">
+                        {CATEGORY_EMOJIS[cat]} {cat}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">
+                  Image URL (Optional)
+                </label>
+                <div className="relative">
+                  <ImageIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                  <input
+                    type="url"
+                    value={editItem.imageUrl}
+                    onChange={(e) => setEditItem({ ...editItem, imageUrl: e.target.value })}
+                    className="w-full bg-background border border-white/10 rounded-xl pl-9 pr-4 py-2.5 text-sm focus:outline-none focus:border-primary transition-colors"
+                    placeholder="https://images.unsplash.com/..."
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center justify-between pt-1">
+                <div>
+                  <p className="text-sm font-semibold text-foreground">Vegetarian Item</p>
+                  <p className="text-xs text-muted-foreground">Mark green dot for veg, red for non-veg</p>
+                </div>
+                <Switch
+                  checked={editItem.isVeg}
+                  onCheckedChange={(c) => setEditItem({ ...editItem, isVeg: c })}
+                />
+              </div>
+
+              <button
+                disabled={isSubmitting}
+                type="submit"
+                className="w-full mt-2 bg-gradient-to-r from-primary to-orange-500 text-white font-bold py-3.5 rounded-xl hover:opacity-95 transition-all flex items-center justify-center gap-2 disabled:opacity-50 active:scale-95 shadow-lg"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="h-5 w-5 animate-spin" /> Saving Changes...
+                  </>
+                ) : (
+                  'Update Menu Item'
                 )}
               </button>
             </form>

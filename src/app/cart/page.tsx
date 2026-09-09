@@ -7,7 +7,7 @@ import { Label } from '@/components/ui/label'
 import { Plus, Minus, Trash2, ShoppingBag, ArrowRight, MapPin, Package, Loader2, Sparkles, ShieldCheck } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useIsMounted } from '@/hooks/use-is-mounted'
 import { toast } from 'sonner'
@@ -21,10 +21,28 @@ export default function CartPage() {
   const [formData, setFormData] = useState({
     name: '',
     phone: '',
-    deliveryType: 'pickup',
+    deliveryType: 'delivery',
     address: '',
     notes: '',
   })
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const lastName = localStorage.getItem('snaxy_last_name')
+        const lastPhone = localStorage.getItem('snaxy_last_phone')
+        if (lastName || lastPhone) {
+          setFormData((prev) => ({
+            ...prev,
+            name: lastName || prev.name,
+            phone: lastPhone || prev.phone,
+          }))
+        }
+      } catch {
+        // Ignore
+      }
+    }
+  }, [])
 
   if (!mounted) return null
 
@@ -63,12 +81,16 @@ export default function CartPage() {
 
   const handleCheckout = async (e: React.FormEvent) => {
     e.preventDefault()
-    if (!formData.name.trim() || !formData.phone.trim()) {
-      toast.error('Please enter your name and phone number')
+    if (!formData.name.trim()) {
+      toast.error('Please enter your Name as shown on your UPI / Bank Account')
       return
     }
-    if (formData.deliveryType === 'delivery' && !formData.address.trim()) {
-      toast.error('Please enter your delivery spot or hostel room')
+    if (!formData.phone.trim() || formData.phone.length !== 10) {
+      toast.error('Please enter a valid 10-digit mobile number')
+      return
+    }
+    if (!formData.address.trim()) {
+      toast.error('Please enter your Campus Spot or Hostel Room location')
       return
     }
 
@@ -79,6 +101,7 @@ export default function CartPage() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           ...formData,
+          deliveryType: 'delivery',
           paymentMethod: 'upi',
           items: items.map((i) => ({
             id: i.menuItemId || i.id,
@@ -95,7 +118,17 @@ export default function CartPage() {
         return
       }
 
-      // Save order metadata in session
+      // Save order metadata in session & local storage for "My Orders" tracking
+      try {
+        const existing = JSON.parse(localStorage.getItem('snaxy_recent_orders') || '[]')
+        const updated = [data.orderId, ...existing.filter((id: string) => id !== data.orderId)].slice(0, 30)
+        localStorage.setItem('snaxy_recent_orders', JSON.stringify(updated))
+        localStorage.setItem('snaxy_last_phone', formData.phone)
+        localStorage.setItem('snaxy_last_name', formData.name)
+      } catch {
+        // Ignore localStorage quota or private mode issues
+      }
+
       sessionStorage.setItem(
         'snaxy_active_order',
         JSON.stringify({
@@ -104,7 +137,7 @@ export default function CartPage() {
           totalAmount: data.totalAmount,
           customerName: formData.name,
           customerPhone: formData.phone,
-          deliveryType: formData.deliveryType,
+          deliveryType: 'delivery',
           items,
         })
       )
@@ -251,21 +284,29 @@ export default function CartPage() {
 
             <form id="checkout-form" onSubmit={handleCheckout} className="px-6 py-5 flex flex-col gap-4 font-sans">
               <div className="space-y-1.5">
-                <Label htmlFor="name" className="text-xs font-bold text-slate-200">
-                  Your Full Name <span className="text-primary">*</span>
-                </Label>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="name" className="text-xs font-black text-slate-200">
+                    Name (as in UPI / Bank Account) <span className="text-primary">*</span>
+                  </Label>
+                  <span className="text-[10px] font-bold text-orange-400 bg-primary/10 border border-primary/20 px-2 py-0.5 rounded-full">
+                    Mandatory for Verification
+                  </span>
+                </div>
                 <Input
                   id="name"
-                  placeholder="e.g. Alex Kumar"
+                  placeholder="e.g. Rahul Sharma"
                   required
                   value={formData.name}
                   onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                   className="rounded-2xl bg-black/50 border-white/10 focus:border-primary/60 h-11 text-sm text-white font-medium shadow-inner"
                 />
+                <p className="text-[11px] text-slate-400 leading-tight">
+                  Must match the sender name on your UPI app (GPay / PhonePe / Paytm) so staff can approve your order instantly.
+                </p>
               </div>
 
               <div className="space-y-1.5">
-                <Label htmlFor="phone" className="text-xs font-bold text-slate-200">
+                <Label htmlFor="phone" className="text-xs font-black text-slate-200">
                   Mobile Number (WhatsApp/Call) <span className="text-primary">*</span>
                 </Label>
                 <Input
@@ -282,46 +323,28 @@ export default function CartPage() {
                 />
               </div>
 
-              {/* Delivery type toggle */}
+              {/* Direct Campus Spot Delivery */}
               <div className="space-y-1.5">
-                <Label className="text-xs font-bold text-slate-200">Service Option</Label>
-                <div className="grid grid-cols-2 gap-2 p-1 rounded-2xl bg-black/50 border border-white/10">
-                  {[
-                    { value: 'pickup', label: 'Canteen Pickup', icon: Package },
-                    { value: 'delivery', label: 'Campus Spot', icon: MapPin },
-                  ].map(({ value, label, icon: Icon }) => (
-                    <button
-                      key={value}
-                      type="button"
-                      onClick={() => setFormData({ ...formData, deliveryType: value })}
-                      className={`flex items-center justify-center gap-1.5 rounded-xl py-2 text-xs font-bold transition-all duration-200 ${
-                        formData.deliveryType === value
-                          ? 'bg-gradient-to-r from-primary to-rose-500 text-white shadow-md'
-                          : 'text-slate-400 hover:text-white'
-                      }`}
-                    >
-                      <Icon className="h-3.5 w-3.5" />
-                      {label}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {formData.deliveryType === 'delivery' && (
-                <div className="space-y-1.5 animate-scale-pop">
-                  <Label htmlFor="address" className="text-xs font-bold text-slate-200">
-                    Location / Hostel Room <span className="text-primary">*</span>
+                <div className="flex items-center justify-between">
+                  <Label htmlFor="address" className="text-xs font-black text-slate-200 flex items-center gap-1.5">
+                    <MapPin className="h-3.5 w-3.5 text-primary" /> Campus Spot / Hostel Room <span className="text-primary">*</span>
                   </Label>
-                  <Input
-                    id="address"
-                    placeholder="e.g. Block B Room 304 / Library Lawn"
-                    required={formData.deliveryType === 'delivery'}
-                    value={formData.address}
-                    onChange={(e) => setFormData({ ...formData, address: e.target.value })}
-                    className="rounded-2xl bg-black/50 border-white/10 focus:border-primary/60 h-11 text-sm text-white font-medium shadow-inner"
-                  />
+                  <span className="text-[10px] font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2 py-0.5 rounded-full">
+                    Campus Delivery
+                  </span>
                 </div>
-              )}
+                <Input
+                  id="address"
+                  placeholder="e.g. Library Lawn / Block B Room 304 / Ground Floor Bench"
+                  required
+                  value={formData.address}
+                  onChange={(e) => setFormData({ ...formData, address: e.target.value })}
+                  className="rounded-2xl bg-black/50 border-white/10 focus:border-primary/60 h-11 text-sm text-white font-medium shadow-inner"
+                />
+                <p className="text-[11px] text-slate-400 leading-tight">
+                  Our runner will deliver your hot snacks directly to this spot.
+                </p>
+              </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="notes" className="text-xs font-bold text-slate-400">

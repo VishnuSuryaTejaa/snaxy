@@ -48,6 +48,13 @@ export async function POST(request: Request) {
       )
     }
 
+    if (!address || !address.trim()) {
+      return NextResponse.json(
+        { success: false, error: 'Campus Spot / Hostel Room location is required' },
+        { status: 400 }
+      )
+    }
+
     // Server-side item & price validation
     interface OrderInputItem {
       id?: string
@@ -124,7 +131,7 @@ export async function POST(request: Request) {
         shortCode,
         customerName: sanitizeHtml(name) || name,
         customerPhone: sanitizeHtml(phone) || phone,
-        deliveryType: deliveryType || 'pickup',
+        deliveryType: deliveryType || 'delivery',
         deliveryAddress: sanitizeHtml(address) || null,
         orderNotes: sanitizeHtml(notes) || null,
         totalAmount: calculatedTotal,

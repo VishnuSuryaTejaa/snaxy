@@ -54,6 +54,7 @@ function CheckoutContent() {
           setShortCode(parsed.shortCode || 'SNX-PAY')
           setTotalAmount(parsed.totalAmount || 0)
           setCustomerName(parsed.customerName || '')
+          setPayerName((prev) => prev || parsed.customerName || '')
           setIsLoadingOrder(false)
           found = true
         }
@@ -72,6 +73,7 @@ function CheckoutContent() {
             setShortCode(data.order.shortCode || 'SNX-PAY')
             setTotalAmount(data.order.totalAmount || 0)
             setCustomerName(data.order.customerName || '')
+            setPayerName((prev) => prev || data.order.customerName || '')
           } else {
             toast.error('Order not found')
             router.push('/cart')
@@ -182,6 +184,13 @@ function CheckoutContent() {
 
       const data = await response.json()
       if (response.ok && data.success) {
+        try {
+          const existing = JSON.parse(localStorage.getItem('snaxy_recent_orders') || '[]')
+          const updated = [orderId, ...existing.filter((id: string) => id !== orderId)].slice(0, 30)
+          localStorage.setItem('snaxy_recent_orders', JSON.stringify(updated))
+        } catch {
+          // Ignore
+        }
         sessionStorage.removeItem('snaxy_active_order')
         toast.success('Payment submitted! Alerting kitchen right now.')
         startTransition(() => {
