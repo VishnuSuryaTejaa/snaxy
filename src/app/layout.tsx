@@ -5,6 +5,7 @@ import "./globals.css";
 import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
+import { ActiveOrderBanner } from "@/components/home/ActiveOrderBanner";
 import { Toaster } from 'sonner';
 import { cookies } from 'next/headers';
 
@@ -81,6 +82,7 @@ export default async function RootLayout({
         <div className="flex-1 flex flex-col">
           {children}
         </div>
+        <ActiveOrderBanner />
         <Footer />
         <ServiceWorkerRegister />
         <Toaster

@@ -19,6 +19,17 @@ export async function GET(request: Request) {
 
     if (isValidUserId) {
       orConditions.push({ userId: sessionUserId })
+      try {
+        const user = await prisma.user.findUnique({
+          where: { id: sessionUserId },
+          select: { phone: true },
+        })
+        if (user?.phone) {
+          orConditions.push({ customerPhone: user.phone })
+        }
+      } catch {
+        // Continue
+      }
     }
 
     if (phoneParam && phoneParam.length === 10) {
