@@ -26,6 +26,9 @@ export function MenuCard({ item }: MenuCardProps) {
     })
 
   const [isImageLoading, setIsImageLoading] = useState(true)
+  const [imgError, setImgError] = useState(false)
+
+  const showImage = Boolean(item.imageUrl && !imgError)
 
   return (
     <div
@@ -35,18 +38,23 @@ export function MenuCard({ item }: MenuCardProps) {
     >
       {/* Inset Image Frame for modern human-crafted proportions */}
       <div className="relative aspect-[16/11] w-[calc(100%-1rem)] mx-auto mt-2 overflow-hidden rounded-2xl bg-slate-900/80 border border-white/[0.06]">
-        {item.imageUrl ? (
+        {showImage ? (
           <>
             {isImageLoading && <div className="absolute inset-0 shimmer z-10" />}
             <Image
-              src={item.imageUrl}
+              src={item.imageUrl!}
               alt={item.name}
               fill
+              unoptimized
               sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
               className={`object-cover transition-transform duration-500 ease-out group-hover:scale-108 ${
                 isImageLoading ? 'opacity-0' : 'opacity-100'
               }`}
               onLoad={() => setIsImageLoading(false)}
+              onError={() => {
+                setIsImageLoading(false)
+                setImgError(true)
+              }}
             />
           </>
         ) : (
