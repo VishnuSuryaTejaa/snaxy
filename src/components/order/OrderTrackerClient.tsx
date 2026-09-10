@@ -15,6 +15,9 @@ import {
   RefreshCw,
   Phone,
   ShieldCheck,
+  AlertTriangle,
+  X,
+  Trash2,
 } from 'lucide-react'
 import Link from 'next/link'
 import { ORDER_STATUS, OrderStatusType } from '@/lib/constants'
@@ -160,6 +163,9 @@ interface OrderTrackerClientProps {
 export function OrderTrackerClient({ initialOrder }: OrderTrackerClientProps) {
   const [order, setOrder] = useState<SerializedOrder>(initialOrder)
   const [isRefreshing, setIsRefreshing] = useState(false)
+  const [showCancelModal, setShowCancelModal] = useState(false)
+  const [cancelReason, setCancelReason] = useState('')
+  const [isCancelling, setIsCancelling] = useState(false)
   const prevStatusRef = useRef(initialOrder.status)
 
   const isCancelled = TERMINAL_BAD.includes(order.status as OrderStatusType)
@@ -167,6 +173,37 @@ export function OrderTrackerClient({ initialOrder }: OrderTrackerClientProps) {
   const isCod = order.paymentMethod === 'cash' || order.upiUtr === 'CASH ON DELIVERY'
   const steps = isCod ? COD_STATUS_STEPS : UPI_STATUS_STEPS
   const activeStep = getStepIndex(order.status, steps)
+
+  const canCancel =
+    order.status === ORDER_STATUS.AWAITING_PAYMENT ||
+    order.status === ORDER_STATUS.PAYMENT_SUBMITTED ||
+    order.status === ORDER_STATUS.VERIFIED
+
+  const handleCancelOrder = async () => {
+    setIsCancelling(true)
+    try {
+      const res = await fetch(`/api/orders/${order.id}/cancel`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reason: cancelReason }),
+      })
+      const data = await res.json()
+      if (data.success) {
+        toast.success('Order cancelled successfully')
+        setOrder((prev) => ({
+          ...prev,
+          status: ORDER_STATUS.CANCELLED,
+        }))
+        setShowCancelModal(false)
+      } else {
+        toast.error(data.error || 'Failed to cancel order')
+      }
+    } catch {
+      toast.error('Network error while cancelling order')
+    } finally {
+      setIsCancelling(false)
+    }
+  }
 
   const fetchLiveStatus = useCallback(async (manual = false) => {
     if (manual) setIsRefreshing(true)
@@ -518,16 +555,126 @@ export function OrderTrackerClient({ initialOrder }: OrderTrackerClientProps) {
           </div>
         </div>
 
-        {/* Back to Home Button */}
-        <Link
-          href="/#menu"
-          className="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-white font-extrabold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg font-display"
-        >
-          <Utensils className="w-4 h-4 text-primary" />
-          <span>Order More Bites</span>
-          <ArrowRight className="w-4 h-4 ml-auto" />
-        </Link>
+        {/* Cancellation and Navigation Actions */}
+        <div className="flex flex-col gap-3">
+          {canCancel && (
+            <button
+              type="button"
+              onClick={() => setShowCancelModal(true)}
+              className="flex items-center justify-center gap-2 py-3.5 px-6 rounded-2xl bg-rose-500/10 hover:bg-rose-500/20 border border-rose-500/25 hover:border-rose-500/40 text-rose-400 font-bold text-xs transition-all active:scale-[0.98] shadow-sm font-sans"
+            >
+              <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+              <span>Cancel Order</span>
+            </button>
+          )}
+
+          {/* Back to Home Button */}
+          <Link
+            href="/#menu"
+            className="flex items-center justify-center gap-2 py-4 px-6 rounded-2xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-white font-extrabold text-sm transition-all hover:scale-[1.02] active:scale-[0.98] shadow-lg font-display"
+          >
+            <Utensils className="w-4 h-4 text-primary" />
+            <span>Order More Bites</span>
+            <ArrowRight className="w-4 h-4 ml-auto" />
+          </Link>
+        </div>
       </div>
+
+      {/* Cancel Order Confirmation Modal */}
+      {showCancelModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in font-sans">
+          <div className="relative w-full max-w-md rounded-3xl bg-slate-950 border border-white/15 p-6 shadow-2xl flex flex-col gap-4 animate-scale-pop">
+            <button
+              type="button"
+              onClick={() => setShowCancelModal(false)}
+              className="absolute top-4 right-4 p-1.5 rounded-xl text-slate-400 hover:text-white hover:bg-white/10 transition"
+            >
+              <X className="w-4 h-4" />
+            </button>
+
+            <div className="flex items-center gap-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/20 border border-rose-500/40 flex items-center justify-center text-rose-400 shrink-0">
+                <AlertTriangle className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-lg font-black text-white font-display">Cancel Order?</h3>
+                <p className="text-xs text-slate-400 font-mono">
+                  Order {order.shortCode || `#${order.id.slice(-6).toUpperCase()}`}
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-2xl bg-black/40 border border-white/[0.08] text-xs text-slate-300 leading-relaxed">
+              <p>
+                Are you sure you want to cancel this order? Once the kitchen begins cooking on the grill, automatic cancellation will be locked.
+              </p>
+            </div>
+
+            <div>
+              <label className="text-xs font-bold text-slate-300 mb-1.5 block">
+                Reason for Cancellation (Optional)
+              </label>
+              <div className="flex flex-wrap gap-1.5 mb-2">
+                {[
+                  'Ordered by mistake',
+                  'Change of mind',
+                  'Taking too long',
+                  'Incorrect items',
+                ].map((reason) => (
+                  <button
+                    key={reason}
+                    type="button"
+                    onClick={() => setCancelReason(reason)}
+                    className={`text-[11px] font-medium px-2.5 py-1 rounded-xl border transition-all ${
+                      cancelReason === reason
+                        ? 'bg-rose-500/20 border-rose-500 text-rose-300 font-bold'
+                        : 'bg-white/[0.04] border-white/10 text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {reason}
+                  </button>
+                ))}
+              </div>
+              <input
+                type="text"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Or type your cancellation reason..."
+                className="w-full text-xs bg-black/50 border border-white/10 rounded-xl px-3 py-2 text-white placeholder-slate-500 focus:outline-none focus:border-rose-500/60"
+              />
+            </div>
+
+            <div className="flex items-center gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setShowCancelModal(false)}
+                disabled={isCancelling}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-white/[0.05] hover:bg-white/[0.1] border border-white/10 text-slate-300 font-bold text-xs transition active:scale-95"
+              >
+                Keep Order
+              </button>
+              <button
+                type="button"
+                onClick={handleCancelOrder}
+                disabled={isCancelling}
+                className="flex-1 py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-red-600 hover:from-rose-500 hover:to-red-500 text-white font-bold text-xs transition active:scale-95 shadow-lg shadow-rose-600/30 flex items-center justify-center gap-1.5"
+              >
+                {isCancelling ? (
+                  <>
+                    <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                    <span>Cancelling...</span>
+                  </>
+                ) : (
+                  <>
+                    <Trash2 className="w-3.5 h-3.5" />
+                    <span>Yes, Cancel</span>
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   )
 }
