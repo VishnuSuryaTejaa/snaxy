@@ -14,12 +14,7 @@ export async function GET() {
     const orders = await prisma.order.findMany({
       where: {
         status: {
-          notIn: [
-            ORDER_STATUS.AWAITING_PAYMENT,
-            ORDER_STATUS.COMPLETED,
-            ORDER_STATUS.CANCELLED,
-            ORDER_STATUS.REJECTED,
-          ],
+          not: ORDER_STATUS.AWAITING_PAYMENT,
         },
       },
       orderBy: {

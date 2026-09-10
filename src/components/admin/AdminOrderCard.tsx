@@ -253,6 +253,15 @@ export function AdminOrderCard({
               </p>
             )}
 
+            {order.orderNotes && (
+              <div className="p-2.5 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs">
+                <p className="text-[10px] text-muted-foreground uppercase font-bold tracking-wider mb-0.5">
+                  📝 Order Note / Reason
+                </p>
+                <p className="text-slate-200 font-medium whitespace-pre-wrap">{order.orderNotes}</p>
+              </div>
+            )}
+
             {/* Screenshot preview button */}
             {order.paymentScreenshot && (
               <button

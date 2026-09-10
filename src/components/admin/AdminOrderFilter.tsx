@@ -8,6 +8,8 @@ const FILTER_TABS = [
   { key: ORDER_STATUS.PREPARING, label: 'Preparing' },
   { key: ORDER_STATUS.READY, label: 'Ready' },
   { key: ORDER_STATUS.COMPLETED, label: 'Completed' },
+  { key: ORDER_STATUS.CANCELLED, label: 'Cancelled' },
+  { key: ORDER_STATUS.REJECTED, label: 'Rejected' },
 ]
 
 export function AdminOrderFilter({
