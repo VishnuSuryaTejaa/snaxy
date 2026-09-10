@@ -6,6 +6,7 @@ import { Navbar } from "@/components/Navbar";
 import { Footer } from "@/components/Footer";
 import { ServiceWorkerRegister } from "@/components/ServiceWorkerRegister";
 import { ActiveOrderBanner } from "@/components/home/ActiveOrderBanner";
+import { AuthProvider } from "@/context/AuthContext";
 import { Toaster } from 'sonner';
 import { cookies } from 'next/headers';
 
@@ -78,13 +79,15 @@ export default async function RootLayout({
       className={`${plusJakarta.variable} ${outfit.variable} ${spaceCowgirl.variable} ${geistMono.variable} h-full antialiased dark`}
     >
       <body className="min-h-full flex flex-col bg-background text-foreground selection:bg-primary/30 selection:text-white font-sans">
-        <Navbar isLoggedIn={isLoggedIn} />
-        <div className="flex-1 flex flex-col">
-          {children}
-        </div>
-        <ActiveOrderBanner />
-        <Footer />
-        <ServiceWorkerRegister />
+        <AuthProvider>
+          <Navbar isLoggedIn={isLoggedIn} />
+          <div className="flex-1 flex flex-col">
+            {children}
+          </div>
+          <ActiveOrderBanner />
+          <Footer />
+          <ServiceWorkerRegister />
+        </AuthProvider>
         <Toaster
           theme="dark"
           position="bottom-center"

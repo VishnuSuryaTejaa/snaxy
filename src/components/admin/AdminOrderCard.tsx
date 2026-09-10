@@ -16,20 +16,70 @@ import {
   Phone,
   Save,
   Sparkles,
+  ShieldCheck,
 } from 'lucide-react'
 import { ORDER_STATUS } from '@/lib/constants'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import Image from 'next/image'
 
-const STATUS_CONFIG: Record<string, { label: string; color: string; border: string; dot: string }> = {
-  [ORDER_STATUS.AWAITING_PAYMENT]: { label: 'Awaiting Payment', color: 'bg-amber-500/15 text-amber-400', border: 'border-l-amber-500', dot: 'bg-amber-400' },
-  [ORDER_STATUS.PAYMENT_SUBMITTED]: { label: 'Pending Verify', color: 'bg-status-pending/15 text-status-pending-fg', border: 'border-l-status-pending', dot: 'bg-status-pending' },
-  [ORDER_STATUS.VERIFIED]: { label: 'Verified', color: 'bg-status-verified/15 text-status-verified-fg', border: 'border-l-status-verified', dot: 'bg-status-verified' },
-  [ORDER_STATUS.PREPARING]: { label: 'Preparing', color: 'bg-status-preparing/15 text-status-preparing-fg', border: 'border-l-status-preparing', dot: 'bg-status-preparing' },
-  [ORDER_STATUS.READY]: { label: 'Ready!', color: 'bg-status-ready/15 text-status-ready-fg', border: 'border-l-status-ready', dot: 'bg-status-ready' },
-  [ORDER_STATUS.COMPLETED]: { label: 'Completed', color: 'bg-emerald-500/15 text-emerald-400', border: 'border-l-emerald-500', dot: 'bg-emerald-400' },
-  [ORDER_STATUS.REJECTED]: { label: 'Rejected', color: 'bg-status-cancelled/15 text-status-cancelled-fg', border: 'border-l-status-cancelled', dot: 'bg-status-cancelled' },
-  [ORDER_STATUS.CANCELLED]: { label: 'Cancelled', color: 'bg-status-cancelled/15 text-status-cancelled-fg', border: 'border-l-status-cancelled', dot: 'bg-status-cancelled' },
+// Unified Color Psychology for Admin Kitchen Staff
+const STATUS_CONFIG: Record<string, { label: string; color: string; border: string; dot: string; glow: string }> = {
+  [ORDER_STATUS.AWAITING_PAYMENT]: {
+    label: 'Awaiting Payment',
+    color: 'bg-amber-500/15 text-amber-300 border border-amber-500/30',
+    border: 'border-l-amber-500',
+    dot: 'bg-amber-400',
+    glow: 'shadow-[0_0_12px_rgba(245,158,11,0.2)]',
+  },
+  [ORDER_STATUS.PAYMENT_SUBMITTED]: {
+    label: 'Verifying Payment',
+    color: 'bg-blue-500/15 text-blue-300 border border-blue-500/30',
+    border: 'border-l-blue-500',
+    dot: 'bg-blue-400 animate-pulse',
+    glow: 'shadow-[0_0_15px_rgba(59,130,246,0.25)]',
+  },
+  [ORDER_STATUS.VERIFIED]: {
+    label: 'Payment Verified',
+    color: 'bg-purple-500/15 text-purple-300 border border-purple-500/30',
+    border: 'border-l-purple-500',
+    dot: 'bg-purple-400',
+    glow: 'shadow-[0_0_15px_rgba(168,85,247,0.25)]',
+  },
+  [ORDER_STATUS.PREPARING]: {
+    label: 'Cooking on Grill',
+    color: 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
+    border: 'border-l-orange-500',
+    dot: 'bg-orange-500 animate-ping',
+    glow: 'shadow-[0_0_20px_rgba(249,115,22,0.3)]',
+  },
+  [ORDER_STATUS.READY]: {
+    label: 'Food Ready!',
+    color: 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40',
+    border: 'border-l-emerald-500',
+    dot: 'bg-emerald-400 animate-pulse',
+    glow: 'shadow-[0_0_20px_rgba(16,185,129,0.35)]',
+  },
+  [ORDER_STATUS.COMPLETED]: {
+    label: 'Completed / Delivered',
+    color: 'bg-slate-800/60 text-slate-400 border border-white/10',
+    border: 'border-l-slate-600',
+    dot: 'bg-slate-500',
+    glow: '',
+  },
+  [ORDER_STATUS.REJECTED]: {
+    label: 'Payment Rejected',
+    color: 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
+    border: 'border-l-rose-500',
+    dot: 'bg-rose-500',
+    glow: 'shadow-[0_0_15px_rgba(244,63,94,0.25)]',
+  },
+  [ORDER_STATUS.CANCELLED]: {
+    label: 'Cancelled',
+    color: 'bg-rose-500/15 text-rose-400 border border-rose-500/30',
+    border: 'border-l-rose-500',
+    dot: 'bg-rose-500',
+    glow: 'shadow-[0_0_15px_rgba(244,63,94,0.25)]',
+  },
 }
 
 const ETA_PRESETS = ['10 mins', '15 mins', '20 mins', '30 mins', '45 mins']
@@ -100,10 +150,10 @@ export function AdminOrderCard({
         <div className="flex items-start justify-between px-4 pt-4 pb-3 border-b border-white/[0.05] bg-muted/10">
           <div>
             <div className="flex items-center gap-2 mb-1.5 flex-wrap">
-              <span className="font-mono text-xs font-bold text-primary bg-primary/10 border border-primary/20 rounded-md px-2 py-0.5">
+              <span className="font-mono text-xs font-black text-orange-400 bg-primary/10 border border-primary/20 rounded-md px-2 py-0.5">
                 {shortId}
               </span>
-              <span className={`inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2.5 py-0.5 ${c.color}`}>
+              <span className={`inline-flex items-center gap-1.5 text-[11px] font-black rounded-full px-2.5 py-0.5 ${c.color} ${c.glow}`}>
                 <span className={`h-1.5 w-1.5 rounded-full ${c.dot}`} />
                 {c.label}
               </span>
@@ -112,7 +162,7 @@ export function AdminOrderCard({
                   💵 CASH ON DELIVERY
                 </span>
               ) : (
-                <span className="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-400 border border-blue-500/20">
+                <span className="inline-flex items-center gap-1 text-[11px] font-bold rounded-full px-2 py-0.5 bg-blue-500/15 text-blue-300 border border-blue-500/20">
                   📱 UPI QR Pay
                 </span>
               )}
@@ -130,35 +180,35 @@ export function AdminOrderCard({
               )}
             </div>
             <p className="font-bold text-base leading-tight">{order.customerName}</p>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-muted-foreground mt-0.5 font-sans">
               📞 <a href={`tel:${order.customerPhone}`} className="hover:text-primary transition">{order.customerPhone}</a>
               {' · '}
               {order.deliveryType === 'delivery' ? '🛵 Delivery' : '🛍️ Pickup'}
               {order.deliveryAddress && ` · ${order.deliveryAddress}`}
             </p>
           </div>
-          <span className="font-extrabold text-primary text-xl shrink-0 ml-2">
+          <span className="font-black text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-rose-400 font-display text-xl shrink-0 ml-2">
             ₹{order.totalAmount.toFixed(0)}
           </span>
         </div>
 
         {/* Fraud / Duplicate UTR Warning Banner */}
         {order.duplicateUtrFlag && (
-          <div className="bg-rose-500/15 border-y border-rose-500/30 px-4 py-2 flex items-center gap-2 text-xs font-bold text-rose-400 animate-pulse">
+          <div className="bg-rose-500/15 border-y border-rose-500/30 px-4 py-2 flex items-center gap-2 text-xs font-bold text-rose-400 animate-pulse font-sans">
             <AlertTriangle className="h-4 w-4 shrink-0 text-rose-400" />
             <span>FRAUD ALERT: Duplicate UTR used on another order!</span>
           </div>
         )}
 
         {/* Items List */}
-        <div className="px-4 py-3 flex-1">
+        <div className="px-4 py-3 flex-1 font-sans">
           <ul className="space-y-1.5">
             {order.items.map((item) => (
               <li key={item.id} className="flex justify-between text-xs">
                 <span className="text-muted-foreground">
                   <span className="font-bold text-foreground">{item.quantity}×</span> {item.menuItem.name}
                 </span>
-                <span className="text-muted-foreground font-mono">
+                <span className="text-muted-foreground font-mono font-semibold">
                   ₹{(item.price * item.quantity).toFixed(0)}
                 </span>
               </li>
@@ -174,8 +224,8 @@ export function AdminOrderCard({
                   <p className="text-xs font-black text-emerald-300">CASH ON DELIVERY</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-[10px] text-emerald-400/80 uppercase font-bold tracking-wider">Collect</p>
-                  <p className="text-sm font-black text-emerald-400">₹{order.totalAmount.toFixed(0)}</p>
+                  <p className="text-[10px] text-emerald-400/80 uppercase font-bold tracking-wider">Collect Cash</p>
+                  <p className="text-sm font-black text-emerald-400 font-display">₹{order.totalAmount.toFixed(0)}</p>
                 </div>
               </div>
             ) : order.upiUtr ? (
@@ -294,7 +344,7 @@ export function AdminOrderCard({
         </div>
 
         {/* Action Buttons */}
-        <div className="px-4 pb-4 flex flex-col gap-2">
+        <div className="px-4 pb-4 flex flex-col gap-2 font-sans">
           {order.status === ORDER_STATUS.PAYMENT_SUBMITTED && (
             <div className="flex gap-2">
               <button
@@ -304,7 +354,7 @@ export function AdminOrderCard({
                     estimatedTime: estimatedTime.trim() || null,
                   })
                 }
-                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs font-bold py-2.5 transition-all active:scale-95 shadow-sm"
+                className="flex-1 flex items-center justify-center gap-1.5 rounded-xl bg-purple-500/20 border border-purple-500/30 text-purple-300 hover:bg-purple-500 hover:text-white text-xs font-bold py-2.5 transition-all active:scale-95 shadow-sm"
               >
                 <CheckCircle2 className="w-4 h-4" /> Verify Payment
               </button>
@@ -326,9 +376,9 @@ export function AdminOrderCard({
                   estimatedTime: estimatedTime.trim() || null,
                 })
               }
-              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-primary/15 border border-primary/25 text-primary hover:bg-primary hover:text-primary-foreground text-xs font-bold py-2.5 transition-all active:scale-95"
+              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-orange-500/20 border border-orange-500/30 text-orange-400 hover:bg-orange-500 hover:text-white text-xs font-bold py-2.5 transition-all active:scale-95 shadow-md"
             >
-              <ChefHat className="w-4 h-4" /> Start Preparing
+              <ChefHat className="w-4 h-4" /> Start Cooking
             </button>
           )}
 
@@ -340,7 +390,7 @@ export function AdminOrderCard({
                   estimatedTime: estimatedTime.trim() || null,
                 })
               }
-              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500 hover:text-white text-xs font-bold py-2.5 transition-all active:scale-95"
+              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-300 hover:bg-emerald-500 hover:text-white text-xs font-bold py-2.5 transition-all active:scale-95 shadow-[0_0_15px_rgba(16,185,129,0.3)]"
             >
               <Bell className="w-4 h-4 animate-bounce" /> Mark Ready for Pickup / Delivery
             </button>
@@ -354,9 +404,9 @@ export function AdminOrderCard({
                   estimatedTime: estimatedTime.trim() || null,
                 })
               }
-              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-primary/15 border border-primary/25 text-primary hover:bg-primary hover:text-primary-foreground text-xs font-bold py-2.5 transition-all active:scale-95"
+              className="w-full flex items-center justify-center gap-1.5 rounded-xl bg-slate-800/80 hover:bg-slate-700 border border-white/15 text-slate-200 text-xs font-bold py-2.5 transition-all active:scale-95"
             >
-              <CheckCircle2 className="h-3.5 w-3.5" /> Complete Order
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" /> Complete Order
             </button>
           )}
 
@@ -378,7 +428,7 @@ export function AdminOrderCard({
               <SelectItem value={ORDER_STATUS.AWAITING_PAYMENT}>Awaiting Payment</SelectItem>
               <SelectItem value={ORDER_STATUS.PAYMENT_SUBMITTED}>Pending Verify</SelectItem>
               <SelectItem value={ORDER_STATUS.VERIFIED}>Verified</SelectItem>
-              <SelectItem value={ORDER_STATUS.PREPARING}>Preparing</SelectItem>
+              <SelectItem value={ORDER_STATUS.PREPARING}>Cooking / Preparing</SelectItem>
               <SelectItem value={ORDER_STATUS.READY}>Ready</SelectItem>
               <SelectItem value={ORDER_STATUS.COMPLETED}>Completed</SelectItem>
               <SelectItem value={ORDER_STATUS.REJECTED}>Rejected</SelectItem>
@@ -399,7 +449,7 @@ export function AdminOrderCard({
             onClick={(e) => e.stopPropagation()}
           >
             <div className="flex items-center justify-between pb-3 border-b border-white/10">
-              <h3 className="font-bold text-sm">Payment Screenshot — {shortId}</h3>
+              <h3 className="font-bold text-sm font-display">Payment Screenshot — {shortId}</h3>
               <button
                 onClick={() => setShowScreenshotModal(false)}
                 className="p-1 rounded-lg hover:bg-white/10 text-muted-foreground hover:text-foreground"

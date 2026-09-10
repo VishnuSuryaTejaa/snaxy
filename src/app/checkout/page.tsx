@@ -37,7 +37,7 @@ function CheckoutContent() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [copied, setCopied] = useState(false)
 
-  const upiId = process.env.NEXT_PUBLIC_UPI_ID || 'snaxy@upi'
+  const upiId = process.env.NEXT_PUBLIC_UPI_ID || '9676842461@sbi'
   const merchantName = process.env.NEXT_PUBLIC_MERCHANT_NAME || 'Snaxy Store'
 
   useEffect(() => {

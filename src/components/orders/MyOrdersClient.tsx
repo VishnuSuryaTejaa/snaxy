@@ -21,8 +21,11 @@ import {
   ShoppingBag,
   Sparkles,
   Phone,
+  User,
+  Check,
 } from 'lucide-react'
 import { ORDER_STATUS, OrderStatusType } from '@/lib/constants'
+import { useAuth } from '@/context/AuthContext'
 import { toast } from 'sonner'
 
 export interface UserOrder {
@@ -60,28 +63,34 @@ interface StepMilestone {
   key: OrderStatusType[]
   label: string
   icon: React.ComponentType<{ className?: string }>
+  activeClass: string
 }
 
+// Intentional Color Psychology milestones
 const ORDER_STEPS: StepMilestone[] = [
   {
     key: [ORDER_STATUS.AWAITING_PAYMENT, ORDER_STATUS.PAYMENT_SUBMITTED],
     label: 'Submitted',
     icon: Clock,
+    activeClass: 'border-blue-500 text-blue-400 shadow-[0_0_15px_rgba(59,130,246,0.5)]',
   },
   {
     key: [ORDER_STATUS.VERIFIED],
     label: 'Verified',
     icon: CheckCircle2,
+    activeClass: 'border-purple-500 text-purple-400 shadow-[0_0_15px_rgba(168,85,247,0.5)]',
   },
   {
     key: [ORDER_STATUS.PREPARING],
     label: 'Cooking',
     icon: ChefHat,
+    activeClass: 'border-orange-500 text-orange-400 shadow-[0_0_15px_rgba(249,115,22,0.5)]',
   },
   {
     key: [ORDER_STATUS.READY, ORDER_STATUS.COMPLETED],
     label: 'Ready',
     icon: Bell,
+    activeClass: 'border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)]',
   },
 ]
 
@@ -89,6 +98,16 @@ function getOrderStepIndex(status: string): number {
   return ORDER_STEPS.findIndex((s) => s.key.includes(status as OrderStatusType))
 }
 
+/**
+ * Color Psychology for Order States:
+ * - Awaiting Payment: Amber / Gold (Attention needed)
+ * - Verifying Payment: Cobalt Blue (Banking Trust & Security)
+ * - Verified: Royal Purple (Official Confirmation & QA)
+ * - Cooking: Saffron Fire Orange (Culinary Energy, Heat & Freshness)
+ * - Ready: Vibrant Emerald Green (Dopamine reward, hot food collection)
+ * - Completed: Muted Slate / Forest (Fulfillment & archiving)
+ * - Cancelled / Rejected: Crimson Red (Instant Warning / Alert)
+ */
 function getStatusBadge(status: string) {
   switch (status) {
     case ORDER_STATUS.AWAITING_PAYMENT:
@@ -96,35 +115,40 @@ function getStatusBadge(status: string) {
         label: 'Awaiting Payment',
         color: 'bg-amber-500/15 border-amber-500/30 text-amber-300',
         dot: 'bg-amber-400',
-        emoji: '💳',
+        emoji: '⚡',
+        glow: 'shadow-[0_0_15px_rgba(245,158,11,0.2)]',
       }
     case ORDER_STATUS.PAYMENT_SUBMITTED:
       return {
         label: 'Verifying Payment',
-        color: 'bg-orange-500/15 border-orange-500/30 text-orange-300',
-        dot: 'bg-orange-400 animate-pulse',
-        emoji: '⏳',
+        color: 'bg-blue-500/15 border-blue-500/30 text-blue-300',
+        dot: 'bg-blue-400 animate-pulse',
+        emoji: '🏦',
+        glow: 'shadow-[0_0_15px_rgba(59,130,246,0.25)]',
       }
     case ORDER_STATUS.VERIFIED:
       return {
         label: 'Payment Verified',
         color: 'bg-purple-500/15 border-purple-500/30 text-purple-300',
         dot: 'bg-purple-400',
-        emoji: '✅',
+        emoji: '🛡️',
+        glow: 'shadow-[0_0_15px_rgba(168,85,247,0.25)]',
       }
     case ORDER_STATUS.PREPARING:
       return {
         label: 'Cooking on Grill',
-        color: 'bg-primary/20 border-primary/40 text-orange-400',
-        dot: 'bg-primary animate-ping',
+        color: 'bg-orange-500/20 border-orange-500/40 text-orange-400',
+        dot: 'bg-orange-500 animate-ping',
         emoji: '👨‍🍳',
+        glow: 'shadow-[0_0_20px_rgba(249,115,22,0.3)]',
       }
     case ORDER_STATUS.READY:
       return {
         label: 'Food Hot & Ready!',
-        color: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300 shadow-[0_0_15px_rgba(16,185,129,0.3)]',
+        color: 'bg-emerald-500/20 border-emerald-500/40 text-emerald-300',
         dot: 'bg-emerald-400 animate-pulse',
         emoji: '🔔',
+        glow: 'shadow-[0_0_20px_rgba(16,185,129,0.35)]',
       }
     case ORDER_STATUS.COMPLETED:
       return {
@@ -132,6 +156,7 @@ function getStatusBadge(status: string) {
         color: 'bg-slate-800/60 border-white/10 text-slate-400',
         dot: 'bg-slate-500',
         emoji: '📦',
+        glow: '',
       }
     case ORDER_STATUS.REJECTED:
     case ORDER_STATUS.CANCELLED:
@@ -140,6 +165,7 @@ function getStatusBadge(status: string) {
         color: 'bg-rose-500/15 border-rose-500/30 text-rose-400',
         dot: 'bg-rose-500',
         emoji: '❌',
+        glow: 'shadow-[0_0_15px_rgba(244,63,94,0.25)]',
       }
     default:
       return {
@@ -147,6 +173,7 @@ function getStatusBadge(status: string) {
         color: 'bg-slate-800/60 border-white/10 text-slate-400',
         dot: 'bg-slate-500',
         emoji: '🍽️',
+        glow: '',
       }
   }
 }
@@ -176,6 +203,7 @@ function playReadyAlert() {
 }
 
 export function MyOrdersClient() {
+  const { user, isLoggedIn } = useAuth()
   const [orders, setOrders] = useState<UserOrder[]>([])
   const [loading, setLoading] = useState(true)
   const [isRefreshing, setIsRefreshing] = useState(false)
@@ -186,24 +214,25 @@ export function MyOrdersClient() {
   const fetchOrders = useCallback(async (manual = false) => {
     if (manual) setIsRefreshing(true)
     try {
-      // Collect IDs from localStorage
-      let localIds: string[] = []
-      let lastPhone = ''
-      try {
-        localIds = JSON.parse(localStorage.getItem('snaxy_recent_orders') || '[]')
-        lastPhone = localStorage.getItem('snaxy_last_phone') || ''
-      } catch {
-        // Ignore
-      }
-
-      const phoneToQuery = searchPhone.trim() || lastPhone
-
       const params = new URLSearchParams()
-      if (phoneToQuery && phoneToQuery.length === 10) {
-        params.append('phone', phoneToQuery)
-      }
-      if (localIds.length > 0) {
-        params.append('ids', localIds.slice(0, 30).join(','))
+
+      if (isLoggedIn && user) {
+        // Authenticated user: session cookie automatically provides isolated user order history
+      } else {
+        // Guest user: collect IDs from scoped guest storage
+        let guestIds: string[] = []
+        try {
+          const storedGuest = localStorage.getItem('snaxy_guest_orders')
+          const storedRecent = localStorage.getItem('snaxy_recent_orders')
+          const parsed = storedGuest ? JSON.parse(storedGuest) : (storedRecent ? JSON.parse(storedRecent) : [])
+          if (Array.isArray(parsed)) guestIds = parsed
+        } catch {
+          // Ignore
+        }
+
+        if (guestIds.length > 0) {
+          params.append('ids', guestIds.slice(0, 30).join(','))
+        }
       }
 
       const res = await fetch(`/api/user/orders?${params.toString()}`)
@@ -228,19 +257,9 @@ export function MyOrdersClient() {
       setLoading(false)
       if (manual) setTimeout(() => setIsRefreshing(false), 500)
     }
-  }, [searchPhone])
+  }, [isLoggedIn, user])
 
   useEffect(() => {
-    // Initial auto-populate search phone if stored
-    try {
-      const storedPhone = localStorage.getItem('snaxy_last_phone')
-      if (storedPhone && storedPhone.length === 10) {
-        setSearchPhone(storedPhone)
-      }
-    } catch {
-      // Ignore
-    }
-
     fetchOrders()
   }, [fetchOrders])
 
@@ -261,21 +280,6 @@ export function MyOrdersClient() {
 
     return () => clearInterval(interval)
   }, [orders, fetchOrders])
-
-  const handlePhoneSearch = (e: React.FormEvent) => {
-    e.preventDefault()
-    if (searchPhone.trim().length !== 10) {
-      toast.error('Please enter a valid 10-digit mobile number')
-      return
-    }
-    try {
-      localStorage.setItem('snaxy_last_phone', searchPhone.trim())
-    } catch {
-      // Ignore
-    }
-    setLoading(true)
-    fetchOrders(true)
-  }
 
   const activeOrders = orders.filter(
     (o) =>
@@ -343,28 +347,49 @@ export function MyOrdersClient() {
           </div>
         </div>
 
-        {/* Search by Mobile Phone */}
-        <div className="p-4 sm:p-5 rounded-3xl bg-slate-950/80 backdrop-blur-2xl border border-white/[0.08] shadow-2xl">
-          <form onSubmit={handlePhoneSearch} className="flex flex-col sm:flex-row items-center gap-3">
-            <div className="relative flex-1 w-full">
-              <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-400 pointer-events-none" />
-              <input
-                type="tel"
-                placeholder="Search orders by 10-digit mobile number..."
-                value={searchPhone}
-                onChange={(e) => setSearchPhone(e.target.value.replace(/\D/g, '').slice(0, 10))}
-                className="w-full pl-11 pr-4 py-3 rounded-2xl bg-black/50 border border-white/10 text-white placeholder-slate-500 focus:outline-none focus:ring-2 focus:ring-primary/50 text-xs sm:text-sm font-mono shadow-inner"
-              />
+        {/* User Account / Data Privacy Badge */}
+        {isLoggedIn && user ? (
+          <div className="p-4 sm:p-5 rounded-3xl bg-slate-950/80 backdrop-blur-2xl border border-white/[0.08] shadow-xl flex flex-wrap items-center justify-between gap-3 font-sans">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-primary/20 border border-primary/30 flex items-center justify-center text-primary">
+                <User className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs text-slate-400 font-bold uppercase tracking-wider">
+                  Private Account Vault
+                </p>
+                <p className="text-sm font-black text-white font-display">
+                  {user.name} • <span className="font-mono text-slate-300">{user.phone}</span>
+                </p>
+              </div>
             </div>
-            <button
-              type="submit"
-              className="w-full sm:w-auto px-5 py-3 rounded-2xl bg-white/[0.08] hover:bg-primary hover:text-white border border-white/10 text-slate-200 text-xs font-bold transition-all active:scale-95 shadow-md flex items-center justify-center gap-2"
+            <div className="flex items-center gap-2 text-xs font-bold text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-3 py-1.5 rounded-xl">
+              <ShieldCheck className="w-4 h-4 text-emerald-400" />
+              <span>Orders Strictly Private to You</span>
+            </div>
+          </div>
+        ) : (
+          <div className="p-4 sm:p-5 rounded-3xl bg-slate-950/80 backdrop-blur-2xl border border-white/[0.08] shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4 font-sans">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-2xl bg-white/[0.05] border border-white/10 flex items-center justify-center text-slate-400 shrink-0">
+                <ShoppingBag className="w-5 h-5" />
+              </div>
+              <div>
+                <p className="text-xs font-bold text-slate-300">Guest Device Session</p>
+                <p className="text-[11px] text-slate-400 mt-0.5">
+                  Showing orders placed during your current guest session. Sign in to sync across all devices.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/login"
+              className="w-full sm:w-auto px-4 py-2 rounded-xl bg-white/[0.08] hover:bg-white/[0.12] border border-white/10 text-white text-xs font-bold transition flex items-center justify-center gap-1.5 shrink-0"
             >
-              <span>Search Orders</span>
-              <ArrowRight className="h-3.5 w-3.5" />
-            </button>
-          </form>
-        </div>
+              <User className="w-3.5 h-3.5 text-primary" />
+              <span>Sign In for Full History</span>
+            </Link>
+          </div>
+        )}
 
         {/* Tab Filters */}
         <div className="flex items-center gap-2 p-1.5 rounded-2xl bg-black/50 border border-white/10 w-fit">
@@ -417,10 +442,8 @@ export function MyOrdersClient() {
             <h3 className="text-xl sm:text-2xl font-black text-white font-display mb-1">
               No Orders Found
             </h3>
-            <p className="text-xs sm:text-sm text-slate-400 max-w-sm mb-6 leading-relaxed">
-              {searchPhone
-                ? `No orders linked with mobile number ${searchPhone}. Search with another number or place a new order!`
-                : 'You haven’t placed any orders from this device yet. Explore the menu to grab fresh campus snacks!'}
+            <p className="text-xs sm:text-sm text-slate-400 max-w-sm mb-6 leading-relaxed font-sans">
+              You haven’t placed any orders yet. Explore our delicious live campus menu to grab your favorite snacks!
             </p>
             <Link
               href="/#menu"
@@ -448,7 +471,7 @@ export function MyOrdersClient() {
                     5
                   )} ${
                     isReady
-                      ? 'border-emerald-500/50 ring-2 ring-emerald-500/20'
+                      ? 'border-emerald-500/50 ring-2 ring-emerald-500/20 shadow-[0_0_25px_rgba(16,185,129,0.2)]'
                       : 'border-white/[0.08] hover:border-primary/40'
                   }`}
                 >
@@ -464,7 +487,7 @@ export function MyOrdersClient() {
                         </span>
                       </div>
                       <div className="h-7 w-px bg-white/10 hidden sm:block" />
-                      <span className="text-xs text-slate-400 hidden sm:inline">
+                      <span className="text-xs text-slate-400 hidden sm:inline font-sans">
                         {new Date(order.createdAt).toLocaleDateString([], {
                           month: 'short',
                           day: 'numeric',
@@ -497,9 +520,9 @@ export function MyOrdersClient() {
                         </span>
                       )}
 
-                      {/* Status pill */}
+                      {/* Status pill with psychological color mapping */}
                       <span
-                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border ${badge.color}`}
+                        className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-black border ${badge.color} ${badge.glow}`}
                       >
                         <span className={`h-2 w-2 rounded-full ${badge.dot}`} />
                         <span>{badge.label}</span>
@@ -537,7 +560,7 @@ export function MyOrdersClient() {
                                   done
                                     ? 'bg-gradient-to-r from-primary to-rose-500 border-transparent text-white shadow-md'
                                     : active
-                                    ? 'bg-slate-900 border-primary text-primary scale-110 shadow-[0_0_15px_rgba(255,94,14,0.5)]'
+                                    ? `bg-slate-900 ${step.activeClass} scale-110`
                                     : 'bg-slate-900 border-white/10 text-slate-600 opacity-60'
                                 }`}
                               >

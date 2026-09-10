@@ -12,16 +12,29 @@ function sanitizeHtml(str: string | undefined): string | undefined {
 }
 
 /**
- * Generate a short memorable code for UPI transaction reference (e.g. SNX-7K9A)
+ * Generate a guaranteed unique short memorable code for UPI transaction reference (e.g. SNX-7K9A)
  */
-function generateShortCode(): string {
+async function generateUniqueShortCode(): Promise<string> {
   const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ' // Base32 without confusing chars (0, O, 1, I)
-  const bytes = crypto.randomBytes(4)
-  let code = ''
-  for (let i = 0; i < 4; i++) {
-    code += chars[bytes[i] % chars.length]
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const bytes = crypto.randomBytes(4)
+    let code = ''
+    for (let i = 0; i < 4; i++) {
+      code += chars[bytes[i] % chars.length]
+    }
+    const candidate = `SNX-${code}`
+    const existing = await prisma.order.findUnique({
+      where: { shortCode: candidate },
+      select: { id: true },
+    })
+    if (!existing) {
+      return candidate
+    }
   }
-  return `SNX-${code}`
+  // Fallback with high-entropy timestamp suffix to guarantee uniqueness
+  const timestampSuffix = Date.now().toString(36).toUpperCase().slice(-4)
+  const randomByte = crypto.randomBytes(2).toString('hex').toUpperCase().slice(0, 2)
+  return `SNX-${timestampSuffix}${randomByte}`
 }
 
 export async function POST(request: Request) {
@@ -121,7 +134,7 @@ export async function POST(request: Request) {
     const isValidObjectId = rawUserId && /^[0-9a-fA-F]{24}$/.test(rawUserId)
     const userId = isValidObjectId ? rawUserId : null
 
-    const shortCode = generateShortCode()
+    const shortCode = await generateUniqueShortCode()
     const cleanPaymentMethod = paymentMethod === 'cash' || paymentMethod === 'cod' ? 'cash' : 'upi'
     const isCash = cleanPaymentMethod === 'cash'
     const initialStatus = isCash ? ORDER_STATUS.PREPARING : ORDER_STATUS.AWAITING_PAYMENT

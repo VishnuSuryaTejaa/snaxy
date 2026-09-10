@@ -4,10 +4,13 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { ShoppingCart, ArrowRight, User, LogOut, Shield, Clock } from 'lucide-react'
 import { useCartStore } from '@/lib/store'
+import { useAuth } from '@/context/AuthContext'
 import { useIsMounted } from '@/hooks/use-is-mounted'
 import { useState, useEffect, useRef } from 'react'
 
-export function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
+export function Navbar({ isLoggedIn: initialIsLoggedIn = false }: { isLoggedIn?: boolean }) {
+  const { user, isLoggedIn: authIsLoggedIn, logout } = useAuth()
+  const isLoggedIn = authIsLoggedIn || initialIsLoggedIn
   const items = useCartStore((state) => state.items)
   const getCartTotal = useCartStore((state) => state.getCartTotal)
   const mounted = useIsMounted()
@@ -115,16 +118,22 @@ export function Navbar({ isLoggedIn = false }: { isLoggedIn?: boolean }) {
             <div className="h-5 w-px bg-white/10 hidden sm:block" />
 
             {isLoggedIn ? (
-              <button
-                onClick={async () => {
-                  await fetch('/api/auth/logout', { method: 'POST' })
-                  window.location.reload()
-                }}
-                className="flex items-center gap-1.5 px-3.5 py-2 rounded-2xl text-xs font-bold bg-white/[0.05] hover:bg-white/[0.1] border border-white/[0.08] text-slate-200 transition-all hover:border-white/20 active:scale-95"
-              >
-                <LogOut className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">Logout</span>
-              </button>
+              <div className="flex items-center gap-1.5 sm:gap-2">
+                {user?.name && (
+                  <span className="hidden lg:inline-flex items-center gap-1 px-2.5 py-1 rounded-xl bg-white/[0.04] border border-white/[0.08] text-xs font-bold text-slate-300">
+                    <User className="w-3 h-3 text-primary" />
+                    <span className="max-w-[100px] truncate">{user.name.split(' ')[0]}</span>
+                  </span>
+                )}
+                <button
+                  onClick={() => logout()}
+                  className="flex items-center gap-1.5 px-3 sm:px-3.5 py-2 rounded-2xl text-xs font-bold bg-white/[0.05] hover:bg-rose-500/20 hover:text-rose-300 hover:border-rose-500/30 border border-white/[0.08] text-slate-200 transition-all active:scale-95"
+                  title="Sign out of your account"
+                >
+                  <LogOut className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Logout</span>
+                </button>
+              </div>
             ) : (
               <Link
                 href="/login"

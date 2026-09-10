@@ -7,43 +7,40 @@ export const dynamic = 'force-dynamic'
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url)
-    const phoneParam = searchParams.get('phone')?.trim().replace(/\D/g, '')
     const idsParam = searchParams.get('ids')?.trim()
 
     const cookieStore = await cookies()
     const sessionUserId = cookieStore.get('snaxy_user_session')?.value
     const isValidUserId = sessionUserId && /^[0-9a-fA-F]{24}$/.test(sessionUserId)
 
-    // Build Prisma query condition
-    const orConditions: any[] = []
+    let orConditions: any[] = []
 
     if (isValidUserId) {
-      orConditions.push({ userId: sessionUserId })
-      try {
-        const user = await prisma.user.findUnique({
-          where: { id: sessionUserId },
-          select: { phone: true },
-        })
-        if (user?.phone) {
+      // 1. Authenticated User: Strictly private to this user's account & registered phone
+      const user = await prisma.user.findUnique({
+        where: { id: sessionUserId },
+        select: { id: true, phone: true },
+      })
+
+      if (user) {
+        orConditions.push({ userId: user.id })
+        if (user.phone) {
           orConditions.push({ customerPhone: user.phone })
         }
-      } catch {
-        // Continue
       }
-    }
+    } else {
+      // 2. Unauthenticated / Guest User:
+      // Privacy Guard: Guests may ONLY access explicit orders created in their current guest session via 'ids'
+      // Arbitrary phone searches without authentication are strictly blocked to prevent data leakage.
+      if (idsParam) {
+        const idList = idsParam
+          .split(',')
+          .map((id) => id.trim())
+          .filter((id) => /^[0-9a-fA-F]{24}$/.test(id))
 
-    if (phoneParam && phoneParam.length === 10) {
-      orConditions.push({ customerPhone: phoneParam })
-    }
-
-    if (idsParam) {
-      const idList = idsParam
-        .split(',')
-        .map((id) => id.trim())
-        .filter((id) => /^[0-9a-fA-F]{24}$/.test(id))
-
-      if (idList.length > 0) {
-        orConditions.push({ id: { in: idList } })
+        if (idList.length > 0) {
+          orConditions.push({ id: { in: idList }, userId: null })
+        }
       }
     }
 

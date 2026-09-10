@@ -1,10 +1,11 @@
 'use client'
 
 import { useCartStore } from '@/lib/store'
+import { useAuth } from '@/context/AuthContext'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
-import { Plus, Minus, Trash2, ShoppingBag, ArrowRight, MapPin, Package, Loader2, Sparkles, ShieldCheck, QrCode, Banknote, CheckCircle2 } from 'lucide-react'
+import { Plus, Minus, Trash2, ShoppingBag, ArrowRight, MapPin, Package, Loader2, Sparkles, ShieldCheck, QrCode, Banknote, CheckCircle2, User } from 'lucide-react'
 import Link from 'next/link'
 import Image from 'next/image'
 import { useState, useEffect } from 'react'
@@ -13,6 +14,7 @@ import { useIsMounted } from '@/hooks/use-is-mounted'
 import { toast } from 'sonner'
 
 export default function CartPage() {
+  const { user, isLoggedIn } = useAuth()
   const { items, removeItem, updateQuantity, clearCart, getCartTotal } = useCartStore()
   const mounted = useIsMounted()
   const router = useRouter()
@@ -28,10 +30,16 @@ export default function CartPage() {
   })
 
   useEffect(() => {
-    if (typeof window !== 'undefined') {
+    if (user) {
+      setFormData((prev) => ({
+        ...prev,
+        name: user.name || prev.name,
+        phone: user.phone || prev.phone,
+      }))
+    } else if (typeof window !== 'undefined') {
       try {
-        const lastName = localStorage.getItem('snaxy_last_name')
-        const lastPhone = localStorage.getItem('snaxy_last_phone')
+        const lastName = localStorage.getItem('snaxy_guest_name')
+        const lastPhone = localStorage.getItem('snaxy_guest_phone')
         if (lastName || lastPhone) {
           setFormData((prev) => ({
             ...prev,
@@ -43,7 +51,7 @@ export default function CartPage() {
         // Ignore
       }
     }
-  }, [])
+  }, [user])
 
   if (!mounted) return null
 
@@ -125,11 +133,15 @@ export default function CartPage() {
 
       // Save order metadata in session & local storage for "My Orders" tracking
       try {
-        const existing = JSON.parse(localStorage.getItem('snaxy_recent_orders') || '[]')
+        const orderKey = user ? `snaxy_user_${user.id}_orders` : 'snaxy_guest_orders'
+        const existing = JSON.parse(localStorage.getItem(orderKey) || '[]')
         const updated = [data.orderId, ...existing.filter((id: string) => id !== data.orderId)].slice(0, 30)
-        localStorage.setItem('snaxy_recent_orders', JSON.stringify(updated))
-        localStorage.setItem('snaxy_last_phone', formData.phone)
-        localStorage.setItem('snaxy_last_name', formData.name)
+        localStorage.setItem(orderKey, JSON.stringify(updated))
+
+        if (!user) {
+          localStorage.setItem('snaxy_guest_phone', formData.phone)
+          localStorage.setItem('snaxy_guest_name', formData.name)
+        }
       } catch {
         // Ignore localStorage quota or private mode issues
       }
@@ -288,9 +300,24 @@ export default function CartPage() {
         <div className="w-full lg:w-[420px]">
           <div className="sticky top-28 rounded-3xl bg-slate-950/80 backdrop-blur-2xl border border-white/[0.08] overflow-hidden shadow-2xl">
             <div className="px-6 py-5 border-b border-white/[0.08] bg-white/[0.02]">
-              <h2 className="text-lg font-black tracking-tight text-white font-display">
-                Customer &amp; Spot Details
-              </h2>
+              <div className="flex items-center justify-between">
+                <h2 className="text-lg font-black tracking-tight text-white font-display">
+                  Customer &amp; Spot Details
+                </h2>
+                {user ? (
+                  <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/15 border border-emerald-500/30 text-[10px] font-extrabold text-emerald-300">
+                    <ShieldCheck className="w-3 h-3 text-emerald-400" />
+                    <span>Verified User</span>
+                  </span>
+                ) : (
+                  <Link
+                    href="/login?from=/cart"
+                    className="text-[11px] font-bold text-orange-400 hover:text-orange-300 hover:underline"
+                  >
+                    Sign In
+                  </Link>
+                )}
+              </div>
               <p className="text-xs text-slate-400 mt-0.5 font-sans">Freshly prepared &amp; delivered across campus</p>
             </div>
 
