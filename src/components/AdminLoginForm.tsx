@@ -24,7 +24,16 @@ export function AdminLoginForm() {
       })
 
       if (res.ok) {
-        router.refresh()
+        if (typeof window !== 'undefined') {
+          try {
+            sessionStorage.removeItem('snaxy_active_order')
+            localStorage.removeItem('snaxy_recent_orders')
+            localStorage.removeItem('snaxy_guest_orders')
+          } catch {
+            // Ignore storage errors
+          }
+        }
+        window.location.href = '/admin'
       } else {
         const data = await res.json()
         setError(data.error || 'Invalid password')

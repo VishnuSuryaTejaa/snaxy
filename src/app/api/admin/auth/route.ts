@@ -25,6 +25,9 @@ export async function POST(request: Request) {
         maxAge: COOKIE_MAX_AGE,
       })
 
+      // Mutual exclusivity: Clear normal user session cookie on admin login
+      cookieStore.delete('snaxy_user_session')
+
       return NextResponse.json({ success: true })
     }
 

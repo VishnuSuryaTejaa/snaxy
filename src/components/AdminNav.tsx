@@ -18,9 +18,23 @@ export function AdminNav() {
 
   async function handleLogout() {
     setLoggingOut(true)
-    await fetch('/api/admin/auth/logout', { method: 'POST' })
-    router.push('/')
-    router.refresh()
+    try {
+      await fetch('/api/admin/auth/logout', { method: 'POST' })
+    } catch {
+      // Ignore network errors
+    } finally {
+      if (typeof window !== 'undefined') {
+        try {
+          sessionStorage.clear()
+          localStorage.removeItem('snaxy_active_order')
+          localStorage.removeItem('snaxy_recent_orders')
+          localStorage.removeItem('snaxy_guest_orders')
+        } catch {
+          // Ignore storage errors
+        }
+      }
+      window.location.href = '/'
+    }
   }
 
   return (

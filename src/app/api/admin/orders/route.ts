@@ -3,6 +3,8 @@ import { prisma } from '@/lib/db'
 import { ORDER_STATUS } from '@/lib/constants'
 import { requireAdmin } from '@/lib/auth'
 
+export const dynamic = 'force-dynamic'
+
 // API endpoint to fetch all active orders for the admin dashboard
 export async function GET() {
   const auth = await requireAdmin()
@@ -12,7 +14,12 @@ export async function GET() {
     const orders = await prisma.order.findMany({
       where: {
         status: {
-          notIn: [ORDER_STATUS.COMPLETED, ORDER_STATUS.CANCELLED, ORDER_STATUS.REJECTED],
+          notIn: [
+            ORDER_STATUS.AWAITING_PAYMENT,
+            ORDER_STATUS.COMPLETED,
+            ORDER_STATUS.CANCELLED,
+            ORDER_STATUS.REJECTED,
+          ],
         },
       },
       orderBy: {

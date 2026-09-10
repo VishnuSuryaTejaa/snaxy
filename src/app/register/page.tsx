@@ -30,7 +30,7 @@ export default function RegisterPage() {
       const data = await res.json()
 
       if (data.success) {
-        router.push('/')
+        window.location.href = '/'
       } else {
         setError(data.error || 'Registration failed')
       }

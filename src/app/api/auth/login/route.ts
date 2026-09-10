@@ -27,6 +27,8 @@ export async function POST(request: Request) {
       sameSite: 'lax',
       path: '/'
     })
+    // Mutual exclusivity: Clear admin session when logging in as a user
+    response.cookies.delete('snaxy_admin_session')
 
     return response
   } catch (error) {
